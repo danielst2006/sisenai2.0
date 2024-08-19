@@ -20,18 +20,29 @@ include_once '../head/menu.html';
             <h1 class="text-center">Andar</h1>
             <div style="overflow-x:auto;">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <div class="flex-grow-1">
-                        <?php
-                        // Exibe uma mensagem de sucesso ou erro com base no parâmetro de status na URL
-                        if (isset($_GET['status'])) {
-                            if ($_GET['status'] == 'success') {
-                                echo '<div class="alert alert-success mb-0" style="display: inline-block" role="alert">Operação realizada com sucesso!</div>';
-                            } else if ($_GET['status'] == 'error') {
-                                echo '<div class="alert alert-danger mb-0" style="display: inline-block" role="alert">Erro ao realizar a operação</div>';
-                            }
-                        }
-                        ?>
-                    </div>
+                <div class="flex-grow-1">
+                                <?php
+                                // Exibe uma mensagem de sucesso ou erro com base no parâmetro de status na URL
+                                if (isset($_GET['status'])) {
+                                    if ($_GET['status'] == 'success') {
+                                        echo '<div id="alertBox" class="alert alert-success mb-0" style="display: inline-block" role="alert">Operação realizada com sucesso!</div>';
+                                    } else if ($_GET['status'] == 'error') {
+                                        echo '<div id="alertBox" class="alert alert-danger mb-0" style="display: inline-block" role="alert">Erro ao realizar a operação</div>';
+                                    }
+                                }
+                                ?>
+                            </div>
+
+                            <script>
+                                // Esconde a mensagem de alerta após 5 segundos
+                                setTimeout(function() {
+                                    var alertBox = document.getElementById('alertBox');
+                                    if (alertBox) {
+                                        alertBox.style.display = 'none';
+                                    }
+                                }, 5000); // 5000 ms = 5 segundos
+                            </script>
+
 
                     <div>
                         <!-- Botão para abrir o modal de adição de novo andar -->

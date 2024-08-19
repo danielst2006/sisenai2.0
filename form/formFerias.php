@@ -78,13 +78,24 @@ $resultado = mysqli_query($conn, $sql);
                                 // Exibe uma mensagem de sucesso ou erro com base no parâmetro de status na URL
                                 if (isset($_GET['status'])) {
                                     if ($_GET['status'] == 'success') {
-                                        echo '<div class="alert alert-success mb-0" style="display: inline-block" role="alert">Operação realizada com sucesso!</div>';
+                                        echo '<div id="alertBox" class="alert alert-success mb-0" style="display: inline-block" role="alert">Operação realizada com sucesso!</div>';
                                     } else if ($_GET['status'] == 'error') {
-                                        echo '<div class="alert alert-danger mb-0" style="display: inline-block" role="alert">Erro ao realizar a operação</div>';
+                                        echo '<div id="alertBox" class="alert alert-danger mb-0" style="display: inline-block" role="alert">Erro ao realizar a operação</div>';
                                     }
                                 }
                                 ?>
                             </div>
+
+                            <script>
+                                // Esconde a mensagem de alerta após 5 segundos
+                                setTimeout(function() {
+                                    var alertBox = document.getElementById('alertBox');
+                                    if (alertBox) {
+                                        alertBox.style.display = 'none';
+                                    }
+                                }, 5000); // 5000 ms = 5 segundos
+                            </script>
+
 
                             <div>
                                 <!-- Botão para abrir o modal de adição de novas férias -->
@@ -184,6 +195,20 @@ $resultado = mysqli_query($conn, $sql);
                                                 <label for="data_final" class="form-label">Data Fim</label>
                                                 <input type="date" class="form-control" id="data_final" name="data_final" required>
                                             </div>
+
+                                            <script>
+                                                document.getElementById('data_final').addEventListener('change', function() {
+                                                    var dataInicio = document.getElementById('data_inicio').value;
+                                                    var dataFinal = this.value;
+
+                                                    if (dataInicio && dataFinal) {
+                                                        if (dataInicio > dataFinal) {
+                                                            alert('A data de início não pode ser posterior à data de fim.');
+                                                            this.value = ''; // Limpa a data de fim se a condição for inválida
+                                                        }
+                                                    }
+                                                });
+                                            </script>
                                             <div class="mb-3">
                                                 <label for="tipoFerias" class="form-label">Tipo de Férias</label>
                                                 <select class="form-select" id="tipoFerias" name="tipoFerias_id" required>
