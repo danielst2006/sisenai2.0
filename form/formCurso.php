@@ -22,7 +22,7 @@ $result_curso = "SELECT COUNT(*) AS total FROM cursos
 $consulta = mysqli_query($conn, $result_curso);
 
 if ($consulta === false) {
-    die("Error in SQL query: " . mysqli_error($conn));
+    die("Erro na consulta: " . mysqli_error($conn));
 }
 
 $total_curso = mysqli_fetch_assoc($consulta)['total'];
@@ -36,6 +36,13 @@ WHERE nome_curso LIKE CONCAT('%', '$pesquisa', '%')
    OR ano LIKE CONCAT('%', '$pesquisa', '%')";
 $resultado = mysqli_query($conn, $sql);
 
+// Consulta para buscar todos os cursos para o select
+$sql_cursos = "SELECT nome_curso FROM cursos ORDER BY nome_curso ASC";
+$result_cursos = mysqli_query($conn, $sql_cursos);
+
+if ($result_cursos === false) {
+    die("Erro na consulta: " . mysqli_error($conn));
+}
 ?>
 
 <!DOCTYPE html>
@@ -187,24 +194,56 @@ $resultado = mysqli_query($conn, $sql);
                                             <div class="mb-3">
                                                 <label for="nome_curso" class="form-label">Nome do Curso</label>
                                                 <input type="text" class="form-control" id="nome_curso" name="nome_curso" required>
-                                            </div>
-                                            <div class="mb-3">
+                                                <div class="mb-3">
                                                 <label for="area_tecnologica" class="form-label">Área Tecnológica</label>
-                                                <input type="text" class="form-control" id="area_tecnologica" name="area_tecnologica" required>
+                                                <select class="form-select" id="area_tecnologica" name="area_tecnologica" required>
+                                                    <option value="">Selecione uma área</option>
+                                                    <option value="Automotiva">Automotiva</option>
+                                                    <option value="Automação Industrial">Automação Industrial</option>
+                                                    <option value="Eletrônica">Eletrônica</option>
+                                                    <option value="Eletrotécnica">Eletrotécnica</option>
+                                                    <option value="Mecânica">Mecânica</option>
+                                                    <option value="Mecatrônica">Mecatrônica</option>
+                                                    <option value="TI Software">TI Software</option>
+                                                    <option value="TI Hardware">TI Hardware</option>
+                                                    <option value="Desenvolvimento de Sistemas">Desenvolvimento de Sistemas</option>
+                                                    <option value="Redes de Computadores">Redes de Computadores</option>
+                                                    <option value="Manutenção Industrial">Manutenção Industrial</option>
+                                                    <option value="Telecomunicações">Telecomunicações</option>
+                                                    <option value="Química">Química</option>
+                                                    <option value="Metalurgia">Metalurgia</option>
+                                                    <option value="Logística">Logística</option>
+                                                    <option value="Gestão da Produção">Gestão da Produção</option>
+                                                    <option value="Segurança do Trabalho">Segurança do Trabalho</option>
+                                                    <option value="Construção Civil">Construção Civil</option>
+                                                    <option value="Design de Produto">Design de Produto</option>
+                                                    <option value="Gestão Ambiental">Gestão Ambiental</option>
+                                                    <option value="Energia Renovável">Energia Renovável</option>
+                                                </select>
+                                           
                                             </div>
+
+                                         
+
                                             <div class="mb-3">
                                                 <label for="ano" class="form-label">Ano</label>
-                                                <input type="number" class="form-control" id="ano" name="ano" required>
+                                                <input type="number" min="1900" max="2100" class="form-control" id="ano" name="ano" required>
+                                            </div>
+                                           
+
+
+                                       
+
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                                <button type="submit" class="btn btn-primary">Salvar</button>
                                             </div>
                                         </form>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-                                        <button type="submit" class="btn btn-primary" onclick="submitForm()">Salvar</button>
                                     </div>
                                 </div>
                             </div>
                         </div>
+                        <!-- Fim do Modal -->
 
                     </div>
                 </div>
@@ -212,33 +251,25 @@ $resultado = mysqli_query($conn, $sql);
         </div>
     </div>
 
-    <!-- Bootstrap JS and dependencies -->
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/js/bootstrap.min.js"></script>
+    <!-- Script para limpar o formulário ao abrir o modal -->
     <script>
-        // Função para preencher o formulário no modal para edição
-        function editCurso(data) {
-            document.getElementById('curso_id').value = data.curso_id;
-            document.getElementById('nome_curso').value = data.nome_curso;
-            document.getElementById('area_tecnologica').value = data.area_tecnologica;
-            document.getElementById('ano').value = data.ano;
-            document.getElementById('action').value = 'update';
-            document.querySelector('.modal-title').textContent = 'Editar Curso';
-        }
-
-        // Função para limpar o formulário no modal para adicionar novos cursos
         function clearForm() {
-            document.getElementById('cursoForm').reset();
-            document.getElementById('curso_id').value = '';
-            document.getElementById('action').value = 'add';
-            document.querySelector('.modal-title').textContent = 'Adicionar Novo Curso';
+            document.getElementById("cursoForm").reset();
+            document.getElementById("action").value = "add";
         }
 
-        // Função para submeter o formulário
-        function submitForm() {
-            document.getElementById('cursoForm').submit();
+        function editCurso(curso) {
+            document.getElementById("curso_id").value = curso.curso_id;
+            document.getElementById("nome_curso").value = curso.nome_curso;
+            document.getElementById("area_tecnologica").value = curso.area_tecnologica;
+            document.getElementById("ano").value = curso.ano;
+            document.getElementById("action").value = "update";
+            document.getElementById("exampleModalLabel").innerText = "Editar Curso";
         }
     </script>
+
+    <!-- Bootstrap JS -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>

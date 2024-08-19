@@ -28,13 +28,14 @@ $total_curso = mysqli_fetch_assoc($consulta)['total'];
 $num_pagina = ceil($total_curso / $quantidade_pg);
 
 // Consulta para buscar as unidades curriculares
-$sql = "SELECT uc.idunidade_curricular, uc.nome_unidade, uc.carga_horaria, c.nome_curso AS curso_nome 
-FROM unidade_curricular uc 
-JOIN cursos c ON uc.curso_id = c.curso_id 
-WHERE uc.idunidade_curricular LIKE CONCAT('%', '$pesquisa', '%') 
-   OR uc.nome_unidade LIKE CONCAT('%', '$pesquisa', '%') 
-   OR uc.carga_horaria LIKE CONCAT('%', '$pesquisa', '%') 
-   OR c.nome_curso LIKE CONCAT('%', '$pesquisa', '%')";
+$sql = "SELECT uc.idunidade_curricular, uc.nome_unidade, uc.carga_horaria, c.curso_id, c.nome_curso AS curso_nome 
+        FROM unidade_curricular uc 
+        JOIN cursos c ON uc.curso_id = c.curso_id 
+        WHERE uc.idunidade_curricular LIKE CONCAT('%', '$pesquisa', '%') 
+           OR uc.nome_unidade LIKE CONCAT('%', '$pesquisa', '%') 
+           OR uc.carga_horaria LIKE CONCAT('%', '$pesquisa', '%') 
+           OR c.nome_curso LIKE CONCAT('%', '$pesquisa', '%')";
+
 $resultado = mysqli_query($conn, $sql);
 
 ?>
@@ -198,7 +199,6 @@ $resultado = mysqli_query($conn, $sql);
                                                 <label for="curso" class="form-label">Curso</label>
                                                 <select class="form-select" id="curso" name="curso_id" required>
                                                     <?php
-                                                    // Consulta para listar cursos
                                                     $query = "SELECT curso_id, nome_curso FROM cursos";
                                                     $result = mysqli_query($conn, $query);
 
@@ -211,6 +211,7 @@ $resultado = mysqli_query($conn, $sql);
                                                     }
                                                     ?>
                                                 </select>
+
                                             </div>
                                         </form>
                                     </div>
@@ -237,10 +238,22 @@ $resultado = mysqli_query($conn, $sql);
             document.getElementById('idunidade_curricular').value = data.idunidade_curricular;
             document.getElementById('nome_unidade').value = data.nome_unidade;
             document.getElementById('carga_horaria').value = data.carga_horaria;
-            document.getElementById('curso').value = data.curso_id;
+
+            let cursoSelect = document.getElementById('curso');
+
+            // Seleciona a opção correta no <select> com base no curso_id
+            for (let i = 0; i < cursoSelect.options.length; i++) {
+                if (cursoSelect.options[i].value == data.curso_id) {
+                    cursoSelect.selectedIndex = i;
+                    break;
+                }
+            }
+
             document.getElementById('action').value = 'update';
             document.querySelector('.modal-title').textContent = 'Editar Unidade Curricular';
         }
+
+
 
         // Função para limpar o formulário no modal para adicionar novas unidades curriculares
         function clearForm() {
