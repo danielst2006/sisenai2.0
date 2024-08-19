@@ -195,6 +195,8 @@ $resultado = mysqli_query($conn, $sql);
                                             <div class="mb-3">
                                                 <label for="usuario_id" class="form-label">Usuário</label>
                                                 <select class="form-select" id="usuario_id" name="usuario_id" required>
+
+                                                    
                                                     <?php
                                                     // Consulta para listar usuários
                                                     $query = "SELECT idUsuario, nome_usuario FROM usuarios";
@@ -232,14 +234,22 @@ $resultado = mysqli_query($conn, $sql);
     <script>
         // Função para preencher o formulário no modal para edição
         function editProfessor(data) {
-            document.getElementById('idProfessor').value = data.idProfessor;
-            document.getElementById('nome').value = data.nome;
-            document.getElementById('email').value = data.email;
-            document.getElementById('telefone').value = data.telefone;
-            document.getElementById('usuario_id').value = data.usuario_id;
-            document.getElementById('action').value = 'update';
-            document.querySelector('.modal-title').textContent = 'Editar Professor';
+    document.getElementById('idProfessor').value = data.idProfessor;
+    document.getElementById('nome').value = data.nome;
+    document.getElementById('email').value = data.email;
+    document.getElementById('telefone').value = data.telefone;
+    document.getElementById('action').value = 'update';
+    document.querySelector('.modal-title').textContent = 'Editar Professor';
+
+    // Define o campo "Usuário" para o nome "Maria"
+    let usuarioSelect = document.getElementById('usuario_id');
+    for (let i = 0; i < usuarioSelect.options.length; i++) {
+        if (usuarioSelect.options[i].text === "Maria") {
+            usuarioSelect.selectedIndex = i;
+            break;
         }
+    }
+}
 
         // Função para limpar o formulário no modal para adicionar novos professores
         function clearForm() {
