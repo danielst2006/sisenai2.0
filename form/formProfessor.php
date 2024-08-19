@@ -1,5 +1,5 @@
 <?php
-// Inclui o arquivo de menu
+// Inclui o arquivo de menuuuuu
 include_once '../head/menu.html';
 include_once "../bd/conn.php";
 
@@ -250,7 +250,7 @@ $resultado = mysqli_query($conn, $sql);
         }
     }
 }
-
+ 
         // Função para limpar o formulário no modal para adicionar novos professores
         function clearForm() {
             document.getElementById('professorForm').reset();
