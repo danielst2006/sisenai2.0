@@ -29,7 +29,7 @@ $total_turma = mysqli_fetch_assoc($consulta)['total'];
 $num_pagina = ceil($total_turma / $quantidade_pg);
 
 // Consulta para buscar as turmas
-$sql = "SELECT t.turma_id, t.nome_turma, t.data_inicio, t.data_fim, t.horario_inicio, t.horario_final, t.dias_aula, t.status, c.nome_curso 
+$sql = "SELECT t.turma_id, t.nome_turma, t.data_inicio, t.data_fim, t.horario_inicio, t.horario_final, t.status, c.nome_curso 
 FROM turmas t 
 JOIN cursos c ON t.curso_id = c.curso_id 
 WHERE t.turma_id LIKE CONCAT('%', '$pesquisa', '%') 
@@ -103,8 +103,7 @@ $resultado = mysqli_query($conn, $sql);
                                     <th class="text-center">Data Fim</th>
                                     <th class="text-center">Horário Início</th>
                                     <th class="text-center">Horário Final</th>
-                                    
-                                    
+                                    <th class="text-center">Status</th>
                                     <th class="text-center">Curso</th>
                                     <th class="text-center">Ações</th>
                                 </tr>
@@ -114,16 +113,18 @@ $resultado = mysqli_query($conn, $sql);
                                 // Verifica se há turmas e exibe cada uma em uma linha da tabela
                                 if (mysqli_num_rows($resultado) > 0) {
                                     while ($row = mysqli_fetch_assoc($resultado)) {
+                                        // Converte as datas para o formato brasileiro
+                                        $data_inicio = date("d/m/Y", strtotime($row['data_inicio']));
+                                        $data_fim = date("d/m/Y", strtotime($row['data_fim']));
                                 ?>
                                         <tr>
                                             <td class='text-center'><?= htmlspecialchars($row['turma_id']); ?></td>
                                             <td class='text-center'><?= htmlspecialchars($row['nome_turma']); ?></td>
-                                            <td class='text-center'><?= htmlspecialchars($row['data_inicio']); ?></td>
-                                            <td class='text-center'><?= htmlspecialchars($row['data_fim']); ?></td>
+                                            <td class='text-center'><?= htmlspecialchars($data_inicio); ?></td>
+                                            <td class='text-center'><?= htmlspecialchars($data_fim); ?></td>
                                             <td class='text-center'><?= htmlspecialchars($row['horario_inicio']); ?></td>
                                             <td class='text-center'><?= htmlspecialchars($row['horario_final']); ?></td>
-                                            
-                                           
+                                            <td class='text-center'><?= htmlspecialchars($row['status']); ?></td>
                                             <td class='text-center'><?= htmlspecialchars($row['nome_curso']); ?></td>
                                             <td class='text-center'>
                                                 <div class='d-flex justify-content-center'>
@@ -207,17 +208,14 @@ $resultado = mysqli_query($conn, $sql);
                                                 <label for="horario_final" class="form-label">Horário Final</label>
                                                 <input type="time" class="form-control" id="horario_final" name="horario_final" required>
                                             </div>
-                                            <!-- <div class="mb-3">
-                                                <label for="dias_aula" class="form-label">Dias de Aula</label>
-                                                <input type="text" class="form-control" id="dias_aula" name="dias_aula" required>
-                                            </div> -->
-                                            <!-- <div class="mb-3">
+                                            <div class="mb-3">
                                                 <label for="status" class="form-label">Status</label>
                                                 <select class="form-select" id="status" name="status" required>
-                                                    <option value="Ativo">Ativo</option>
-                                                    <option value="Inativo">Inativo</option>
+                                                    <option value="ATIVA">Ativa</option>
+                                                    <option value="CANCELADA">Cancelada</option>
+                                                    <option value="INATIVA">Inativa</option>
                                                 </select>
-                                            </div> -->
+                                            </div>
                                             <div class="mb-3">
                                                 <label for="curso_id" class="form-label">Curso</label>
                                                 <select class="form-select" id="curso_id" name="curso_id" required>
@@ -264,17 +262,28 @@ $resultado = mysqli_query($conn, $sql);
             document.getElementById('data_fim').value = data.data_fim;
             document.getElementById('horario_inicio').value = data.horario_inicio;
             document.getElementById('horario_final').value = data.horario_final;
-            // document.getElementById('dias_aula').value = data.dias_aula;
-            // document.getElementById('status').value = data.status;
-            document.getElementById('curso_id').value = data.curso_id;
+            document.getElementById('status').value = data.status;
+
+            let cursoSelect = document.getElementById('curso_id');
+
+            // Percorre as opções do select e define a que corresponde ao nome do curso
+            for (let i = 0; i < cursoSelect.options.length; i++) {
+                if (cursoSelect.options[i].text === data.nome_curso) {
+                    cursoSelect.selectedIndex = i;
+                    break;
+                }
+            }
+
             document.getElementById('action').value = 'update';
             document.querySelector('.modal-title').textContent = 'Editar Turma';
         }
+
 
         // Função para limpar o formulário no modal para adicionar novas turmas
         function clearForm() {
             document.getElementById('turmaForm').reset();
             document.getElementById('turma_id').value = '';
+            document.getElementById('status').value = 'ATIVA'; // Define valor padrão para status
             document.getElementById('action').value = 'add';
             document.querySelector('.modal-title').textContent = 'Adicionar Nova Turma';
         }
