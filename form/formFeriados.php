@@ -68,24 +68,13 @@ $resultado = mysqli_query($conn, $sql);
                                 // Exibe uma mensagem de sucesso ou erro com base no parâmetro de status na URL
                                 if (isset($_GET['status'])) {
                                     if ($_GET['status'] == 'success') {
-                                        echo '<div id="alertBox" class="alert alert-success mb-0" style="display: inline-block" role="alert">Operação realizada com sucesso!</div>';
+                                        echo '<div class="alert alert-success mb-0" style="display: inline-block" role="alert">Operação realizada com sucesso!</div>';
                                     } else if ($_GET['status'] == 'error') {
-                                        echo '<div id="alertBox" class="alert alert-danger mb-0" style="display: inline-block" role="alert">Erro ao realizar a operação</div>';
+                                        echo '<div class="alert alert-danger mb-0" style="display: inline-block" role="alert">Erro ao realizar a operação</div>';
                                     }
                                 }
                                 ?>
                             </div>
-
-                            <script>
-                                // Esconde a mensagem de alerta após 5 segundos
-                                setTimeout(function() {
-                                    var alertBox = document.getElementById('alertBox');
-                                    if (alertBox) {
-                                        alertBox.style.display = 'none';
-                                    }
-                                }, 5000); // 5000 ms = 5 segundos
-                            </script>
-
 
                             <div>
                                 <!-- Botão para abrir o modal de adição de novos feriados -->
@@ -161,42 +150,49 @@ $resultado = mysqli_query($conn, $sql);
                                 </li>
                             </ul>
                         </nav>
+<!-- Modal para adicionar/editar feriados -->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Adicionar Novo Feriado</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
 
-                        <!-- Modal para adicionar/editar feriados -->
-                        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                            <div class="modal-dialog">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title" id="exampleModalLabel">Adicionar Novo Feriado</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                    </div>
+            <div class="modal-body">
+                <form id="feriadosForm" action="../controls/cadastrarFeriados.php" method="POST">
+                    <input type="hidden" id="idFeriados" name="idFeriados">
+                    <input type="hidden" id="action" name="action" value="add">
 
-                                    <div class="modal-body">
-                                        <form id="feriadosForm" action="../controls/cadastrarFeriados.php" method="POST">
-                                            <input type="hidden" id="idFeriados" name="idFeriados">
-                                            <input type="hidden" id="action" name="action" value="add">
+                    <div class="mb-3">
+                        <label for="nome" class="form-label">Nome do Feriado</label>
+                        <input type="text" class="form-control" id="nome" name="nome" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="dia_feriado" class="form-label">Dia do Feriado</label>
+                        <input type="date" class="form-control" id="dia_feriado" name="dia_feriado" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="tipo" class="form-label">Tipo de Feriado</label>
+                        <select class="form-select" id="tipo" name="tipo" required>
+                            <option value="" disabled selected>Escolha o tipo de feriado</option>
+                            <option value="Municipal">Municipal</option>
+                            <option value="Estadual">Estadual</option>
+                            <option value="Nacional">Nacional</option>
+                            <option value="Ponto Facultativo">Ponto Facultativo</option>
+                            <option value="Interno">Interno</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                <button type="submit" class="btn btn-primary" onclick="submitForm()">Salvar</button>
+            </div>
+        </div>
+    </div>
+</div>
 
-                                            <div class="mb-3">
-                                                <label for="nome" class="form-label">Nome do Feriado</label>
-                                                <input type="text" class="form-control" id="nome" name="nome" required>
-                                            </div>
-                                            <div class="mb-3">
-                                                <label for="dia_feriado" class="form-label">Dia do Feriado</label>
-                                                <input type="date" class="form-control" id="dia_feriado" name="dia_feriado" required>
-                                            </div>
-                                            <div class="mb-3">
-                                                <label for="tipo" class="form-label">Tipo de Feriado</label>
-                                                <input type="text" class="form-control" id="tipo" name="tipo" required>
-                                            </div>
-                                        </form>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-                                        <button type="submit" class="btn btn-primary" onclick="submitForm()">Salvar</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
 
                     </div>
                 </div>

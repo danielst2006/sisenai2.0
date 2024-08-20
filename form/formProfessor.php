@@ -286,8 +286,20 @@ $resultado = mysqli_query($conn, $sql);
             document.getElementById('email').value = data.email;
             document.getElementById('telefone').value = data.telefone;
             document.getElementById('usuario_id').value = data.usuario_id;
+            document.getElementById('nome_usuario').value = data.nome_usuario;
             document.getElementById('area').value = data.area;
             document.getElementById('tipo_contrato').value = data.tipo_contrato;
+        
+       let usuarioSelect = document.getElementById('usuario_id');
+
+// Percorre as opções do select e define a que corresponde ao nome do usuário
+     for (let i = 0; i < usuarioSelect.options.length; i++) {
+       if (usuarioSelect.options[i].text === data.nome_usuario) {
+          usuarioSelect.selectedIndex = i;
+           break;
+      }
+  }
+
             document.getElementById('action').value = 'update';
             document.querySelector('.modal-title').textContent = 'Editar Professor';
         }
