@@ -126,7 +126,7 @@ $resultado = mysqli_query($conn, $sql);
                                         // Converte a data de início e a data de término para o formato brasileiro
                                         $data_inicio_br = date('d/m/Y H:i:s', strtotime($row['data_inicio']));
                                         $data_final_br = date('d/m/Y H:i:s', strtotime($row['data_final']));
-                                    ?>
+                                ?>
                                         <tr>
                                             <td class='text-center'><?= htmlspecialchars($row['idAgendamento']); ?></td>
                                             <td class='text-center'><?= htmlspecialchars($data_inicio_br); ?></td>
@@ -140,12 +140,12 @@ $resultado = mysqli_query($conn, $sql);
                                                 <div class='d-flex justify-content-center'>
                                                     <!-- Botão de edição -->
                                                     <button class='btn action-button edit-button me-2' data-bs-toggle='modal' data-bs-target='#exampleModal' onclick='editAgendamento(<?= json_encode($row); ?>)'><i class='fas fa-pencil-alt'></i></button>
-                                    
+
                                                     <!-- Formulário de exclusão -->
                                                     <form action='../controls/cadastrarAgendamento.php' method='POST' style='display:inline-block;'>
                                                         <input type='hidden' name='idAgendamento' value='<?= htmlspecialchars($row['idAgendamento']); ?>'>
                                                         <input type='hidden' name='action' value='delete'>
-                                    
+
                                                         <!-- Botão de exclusão com confirmação -->
                                                         <button type='submit' class='btn action-button delete-button' onclick='return confirm("Tem certeza que deseja excluir este agendamento?")'><i class='fas fa-times'></i></button>
                                                     </form>
@@ -154,7 +154,6 @@ $resultado = mysqli_query($conn, $sql);
                                         </tr>
                                     <?php
                                     }
-                                    
                                 } else {
                                     ?>
                                     <!-- Mensagem quando não há agendamentos -->
@@ -320,16 +319,73 @@ $resultado = mysqli_query($conn, $sql);
         // Função para preencher o formulário no modal para edição
         function editAgendamento(data) {
             document.getElementById('idAgendamento').value = data.idAgendamento;
-            document.getElementById('data_inicio').value = data.data_inicio.replace(" ", "T");
-            document.getElementById('data_final').value = data.data_final.replace(" ", "T");
-            document.getElementById('usuario_idUsuario').value = data.usuario_idUsuario;
-            document.getElementById('unidade_curricular_id').value = data.unidade_curricular_id;
-            document.getElementById('turma_id').value = data.turma_id;
-            document.getElementById('sala_id').value = data.sala_id;
-            document.getElementById('professor_id').value = data.professor_id;
+            document.getElementById('data_inicio').value = data.data_inicio; // Insere o valor original
+            document.getElementById('data_final').value = data.data_final; // Insere o valor original
+            // document.getElementById('usuario_idUsuario').value = data.usuario_idUsuario;
+            // document.getElementById('unidade_curricular_id').value = data.unidade_curricular_id;
+            // document.getElementById('turma_id').value = data.turma_id;
+            // document.getElementById('sala_id').value = data.sala_id;
+            // document.getElementById('professor_id').value = data.professor_id;
+
+            let usuarioSelect = document.getElementById('usuario_idUsuario');
+
+            // Percorre as opções do select e define a que corresponde ao nome do curso
+            for (let i = 0; i < usuarioSelect.options.length; i++) {
+                if (usuarioSelect.options[i].text === data.nome_usuario) {
+                    usuarioSelect.selectedIndex = i;
+                    break;
+                }
+            }
+
+
+            let unidadeSelect = document.getElementById('unidade_idUsuario');
+
+            // Percorre as opções do select e define a que corresponde ao nome do curso
+            for (let i = 0; i < unidadeSelect.options.length; i++) {
+                if (unidadeSelect.options[i].text === data.nome_unidade) {
+                    unidadeSelect.selectedIndex = i;
+                    break;
+                }
+            }
+
+            let turmaSelect = document.getElementById('turma_idUsuario');
+
+            // Percorre as opções do select e define a que corresponde ao nome do curso
+            for (let i = 0; i < turmaSelect.options.length; i++) {
+                if (turmaSelect.options[i].text === data.nome_turma) {
+                    turmaSelect.selectedIndex = i;
+                    break;
+                }
+            }
+
+            let salaSelect = document.getElementById('sala_idUsuario');
+
+            // Percorre as opções do select e define a que corresponde ao nome do curso
+            for (let i = 0; i < salaSelect.options.length; i++) {
+                if (salaSelect.options[i].text === data.nome) {
+                    salaSelect.selectedIndex = i;
+                    break;
+                }
+            }
+
+            let professorSelect = document.getElementById('professor_idUsuario');
+
+            // Percorre as opções do select e define a que corresponde ao nome do curso
+            for (let i = 0; i < professorSelect.options.length; i++) {
+                if (professorSelect.options[i].text === data.nome) {
+                    professorSelect.selectedIndex = i;
+                    break;
+                }
+            }
+
+
+
             document.getElementById('action').value = 'update';
             document.querySelector('.modal-title').textContent = 'Editar Agendamento';
+
+
         }
+
 
         // Função para limpar o formulário no modal para adicionar novos agendamentos
         function clearForm() {
