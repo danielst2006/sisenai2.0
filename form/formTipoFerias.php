@@ -90,7 +90,10 @@ $resultado = mysqli_query($conn, $sql);
 
                             <div>
                                 <!-- Botão para abrir o modal de adição de novos tipos de férias -->
-                                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal" onclick="clearForm()">Adicionar Novo Tipo</button>
+                                <button class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#exampleModal" onclick="clearForm()">Adicionar Novo Tipo</button>
+                                
+                                <!-- Botão para o formulário de férias -->
+                                <a href="formFerias.php" class="btn btn-secondary">Férias</a>
                             </div>
                         </div>
 
@@ -222,3 +225,4 @@ $resultado = mysqli_query($conn, $sql);
 </body>
 
 </html>
+

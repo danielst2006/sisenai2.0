@@ -38,6 +38,15 @@ WHERE f.idFerias LIKE CONCAT('%', '$pesquisa', '%')
 LIMIT $inicio, $quantidade_pg"; // Adicionando LIMIT para a paginação
 $resultado = mysqli_query($conn, $sql);
 
+// Função para formatar a data para o formato brasileiro
+function formatarData($data) {
+    if ($data) {
+        $dataObj = new DateTime($data);
+        return $dataObj->format('d/m/Y');
+    }
+    return '';
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -99,7 +108,10 @@ $resultado = mysqli_query($conn, $sql);
 
                             <div>
                                 <!-- Botão para abrir o modal de adição de novas férias -->
-                                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal" onclick="clearForm()">Adicionar Nova Férias</button>
+                                <button class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#exampleModal" onclick="clearForm()">Adicionar Nova Férias</button>
+                                
+                                <!-- Botão Tipo de Férias -->
+                                <a href="formTipoFerias.php" class="btn btn-secondary">Tipo de Férias</a>
                             </div>
                         </div>
 
@@ -122,8 +134,8 @@ $resultado = mysqli_query($conn, $sql);
                                 ?>
                                         <tr>
                                             <td class='text-center'><?= htmlspecialchars($row['idFerias']); ?></td>
-                                            <td class='text-center'><?= htmlspecialchars($row['data_inicio']); ?></td>
-                                            <td class='text-center'><?= htmlspecialchars($row['data_final']); ?></td>
+                                            <td class='text-center'><?= formatarData($row['data_inicio']); ?></td>
+                                            <td class='text-center'><?= formatarData($row['data_final']); ?></td>
                                             <td class='text-center'><?= htmlspecialchars($row['tipo']); ?></td>
                                             <td class='text-center'>
                                                 <div class='d-flex justify-content-center'>
