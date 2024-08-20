@@ -7,7 +7,7 @@ if (isset($_POST['login'])) {
     // echo $login, $senha;
 
     include_once "../bd/conn.php";
-    $sql = "SELECT * FROM usuarios WHERE nome_usuario = ?";
+    $sql = "SELECT nome_usuario, senha, t.tipo AS tipos FROM usuarios JOIN tipo_usuario t ON tipo_usuario_id = idTipo_usuario  WHERE nome_usuario = ?";
     
     if ($stmt = mysqli_prepare($conn, $sql)) {
         mysqli_stmt_bind_param($stmt, "s", $login);
@@ -20,7 +20,7 @@ if (isset($_POST['login'])) {
             if (password_verify($senha, $linha['senha'])) {
                 session_start();
                 $_SESSION['login'] = $login;
-                $_SESSION['tipo_usuario'] = $linha['tipo_usuario_id'];
+                $_SESSION['tipo_usuario'] = $linha['tipos'];
                 header("location: ../form/menu.php");
                 exit();
             } else {
