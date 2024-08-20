@@ -31,13 +31,13 @@ $total_professor = mysqli_fetch_assoc($consulta)['total'];
 $num_pagina = ceil($total_professor / $quantidade_pg);
 
 // Consulta para buscar os professores
-$sql = "SELECT p.idProfessor, p.nome, p.email, p.telefone, u.nome_usuario AS usuario 
-FROM professores p 
-JOIN usuarios u ON p.usuario_id = u.idUsuario 
-WHERE p.nome LIKE CONCAT('%', '$pesquisa', '%') 
-   OR p.email LIKE CONCAT('%', '$pesquisa', '%') 
-   OR p.telefone LIKE CONCAT('%', '$pesquisa', '%') 
-   OR u.nome_usuario LIKE CONCAT('%', '$pesquisa', '%')";
+$sql = "SELECT p.idProfessor, p.nome, p.email, p.telefone, u.nome_usuario AS usuario, p.area, p.tipo_contrato 
+        FROM professores p 
+        JOIN usuarios u ON p.usuario_id = u.idUsuario 
+        WHERE p.nome LIKE CONCAT('%', '$pesquisa', '%') 
+           OR p.email LIKE CONCAT('%', '$pesquisa', '%') 
+           OR p.telefone LIKE CONCAT('%', '$pesquisa', '%') 
+           OR u.nome_usuario LIKE CONCAT('%', '$pesquisa', '%')";
 $resultado = mysqli_query($conn, $sql);
 
 ?>
@@ -80,13 +80,23 @@ $resultado = mysqli_query($conn, $sql);
                                 // Exibe uma mensagem de sucesso ou erro com base no parâmetro de status na URL
                                 if (isset($_GET['status'])) {
                                     if ($_GET['status'] == 'success') {
-                                        echo '<div class="alert alert-success mb-0" style="display: inline-block" role="alert">Operação realizada com sucesso!</div>';
+                                        echo '<div id="alertBox" class="alert alert-success mb-0" style="display: inline-block" role="alert">Operação realizada com sucesso!</div>';
                                     } else if ($_GET['status'] == 'error') {
-                                        echo '<div class="alert alert-danger mb-0" style="display: inline-block" role="alert">Erro ao realizar a operação</div>';
+                                        echo '<div id="alertBox" class="alert alert-danger mb-0" style="display: inline-block" role="alert">Erro ao realizar a operação</div>';
                                     }
                                 }
                                 ?>
                             </div>
+
+                            <script>
+                                // Esconde a mensagem de alerta após 5 segundos
+                                setTimeout(function() {
+                                    var alertBox = document.getElementById('alertBox');
+                                    if (alertBox) {
+                                        alertBox.style.display = 'none';
+                                    }
+                                }, 5000); // 5000 ms = 5 segundos
+                            </script>
 
                             <div>
                                 <!-- Botão para abrir o modal de adição de novos professores -->
@@ -103,6 +113,8 @@ $resultado = mysqli_query($conn, $sql);
                                     <th class="text-center">Email</th>
                                     <th class="text-center">Telefone</th>
                                     <th class="text-center">Usuário</th>
+                                    <th class="text-center">Área</th>
+                                    <th class="text-center">Tipo de Contrato</th>
                                     <th class="text-center">Ações</th>
                                 </tr>
                             </thead>
@@ -118,6 +130,8 @@ $resultado = mysqli_query($conn, $sql);
                                             <td class='text-center'><?= htmlspecialchars($row['email']); ?></td>
                                             <td class='text-center'><?= htmlspecialchars($row['telefone']); ?></td>
                                             <td class='text-center'><?= htmlspecialchars($row['usuario']); ?></td>
+                                            <td class='text-center'><?= htmlspecialchars($row['area']); ?></td>
+                                            <td class='text-center'><?= htmlspecialchars($row['tipo_contrato']); ?></td>
                                             <td class='text-center'>
                                                 <div class='d-flex justify-content-center'>
                                                     <!-- Botão de edição -->
@@ -140,7 +154,7 @@ $resultado = mysqli_query($conn, $sql);
                                     ?>
                                     <!-- Mensagem quando não há professores -->
                                     <tr>
-                                        <td colspan='6'>Nenhum professor encontrado</td>
+                                        <td colspan='8'>Nenhum professor encontrado</td>
                                     </tr>
                                 <?php
                                 }
@@ -151,15 +165,15 @@ $resultado = mysqli_query($conn, $sql);
                         <nav aria-label="Page navigation">
                             <ul class="pagination justify-content-center">
                                 <li class="page-item <?php echo ($pagina <= 1) ? 'disabled' : ''; ?>">
-                                    <a class="page-link" href="<?php echo ($pagina > 1) ? 'formProfessores.php?pagina=' . ($pagina - 1) : '#'; ?>" aria-label="Previous">
+                                    <a class="page-link" href="<?php echo ($pagina > 1) ? 'formProfessor.php?pagina=' . ($pagina - 1) : '#'; ?>" aria-label="Previous">
                                         <span aria-hidden="true">&laquo;</span>
                                     </a>
                                 </li>
                                 <?php for ($i = 1; $i <= $num_pagina; $i++) { ?>
-                                    <li class="page-item <?php echo ($pagina == $i) ? 'active' : ''; ?>"><a class="page-link" href="formProfessores.php?pagina=<?php echo $i; ?>"><?php echo $i; ?></a></li>
+                                    <li class="page-item <?php echo ($pagina == $i) ? 'active' : ''; ?>"><a class="page-link" href="formProfessor.php?pagina=<?php echo $i; ?>"><?php echo $i; ?></a></li>
                                 <?php } ?>
                                 <li class="page-item <?php echo ($pagina >= $num_pagina) ? 'disabled' : ''; ?>">
-                                    <a class="page-link" href="<?php echo ($pagina < $num_pagina) ? 'formProfessores.php?pagina=' . ($pagina + 1) : '#'; ?>" aria-label="Next">
+                                    <a class="page-link" href="<?php echo ($pagina < $num_pagina) ? 'formProfessor.php?pagina=' . ($pagina + 1) : '#'; ?>" aria-label="Next">
                                         <span aria-hidden="true">&raquo;</span>
                                     </a>
                                 </li>
@@ -195,8 +209,6 @@ $resultado = mysqli_query($conn, $sql);
                                             <div class="mb-3">
                                                 <label for="usuario_id" class="form-label">Usuário</label>
                                                 <select class="form-select" id="usuario_id" name="usuario_id" required>
-
-                                                    
                                                     <?php
                                                     // Consulta para listar usuários
                                                     $query = "SELECT idUsuario, nome_usuario FROM usuarios";
@@ -210,6 +222,41 @@ $resultado = mysqli_query($conn, $sql);
                                                         echo "<option value=''>Nenhum usuário disponível</option>";
                                                     }
                                                     ?>
+                                                </select>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="area" class="form-label">Área</label>
+                                                <select class="form-select" id="area" name="area" required>
+                                                    <option value="">Selecione a Área</option>
+                                                    <option value="Automotiva">Automotiva</option>
+                                                    <option value="Automação Industrial">Automação Industrial</option>
+                                                    <option value="Eletrônica">Eletrônica</option>
+                                                    <option value="Eletrotécnica">Eletrotécnica</option>
+                                                    <option value="Mecânica">Mecânica</option>
+                                                    <option value="Mecatrônica">Mecatrônica</option>
+                                                    <option value="TI Software">TI Software</option>
+                                                    <option value="TI Hardware">TI Hardware</option>
+                                                    <option value="Desenvolvimento de Sistemas">Desenvolvimento de Sistemas</option>
+                                                    <option value="Redes de Computadores">Redes de Computadores</option>
+                                                    <option value="Manutenção Industrial">Manutenção Industrial</option>
+                                                    <option value="Telecomunicações">Telecomunicações</option>
+                                                    <option value="Química">Química</option>
+                                                    <option value="Metalurgia">Metalurgia</option>
+                                                    <option value="Logística">Logística</option>
+                                                    <option value="Gestão da Produção">Gestão da Produção</option>
+                                                    <option value="Segurança do Trabalho">Segurança do Trabalho</option>
+                                                    <option value="Construção Civil">Construção Civil</option>
+                                                    <option value="Design de Produto">Design de Produto</option>
+                                                    <option value="Gestão Ambiental">Gestão Ambiental</option>
+                                                    <option value="Energia Renovável">Energia Renovável</option>
+                                                </select>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="tipo_contrato" class="form-label">Tipo de Contrato</label>
+                                                <select class="form-select" id="tipo_contrato" name="tipo_contrato" required>
+                                                    <option value="">Selecione o Tipo de Contrato</option>
+                                                    <option value="Mensalista">Mensalista</option>
+                                                    <option value="RPA">RPA</option>
                                                 </select>
                                             </div>
                                         </form>
@@ -234,23 +281,17 @@ $resultado = mysqli_query($conn, $sql);
     <script>
         // Função para preencher o formulário no modal para edição
         function editProfessor(data) {
-    document.getElementById('idProfessor').value = data.idProfessor;
-    document.getElementById('nome').value = data.nome;
-    document.getElementById('email').value = data.email;
-    document.getElementById('telefone').value = data.telefone;
-    document.getElementById('action').value = 'update';
-    document.querySelector('.modal-title').textContent = 'Editar Professor';
-
-    // Define o campo "Usuário" para o nome "Maria"
-    let usuarioSelect = document.getElementById('usuario_id');
-    for (let i = 0; i < usuarioSelect.options.length; i++) {
-        if (usuarioSelect.options[i].text === "Maria") {
-            usuarioSelect.selectedIndex = i;
-            break;
+            document.getElementById('idProfessor').value = data.idProfessor;
+            document.getElementById('nome').value = data.nome;
+            document.getElementById('email').value = data.email;
+            document.getElementById('telefone').value = data.telefone;
+            document.getElementById('usuario_id').value = data.usuario_id;
+            document.getElementById('area').value = data.area;
+            document.getElementById('tipo_contrato').value = data.tipo_contrato;
+            document.getElementById('action').value = 'update';
+            document.querySelector('.modal-title').textContent = 'Editar Professor';
         }
-    }
-}
- 
+
         // Função para limpar o formulário no modal para adicionar novos professores
         function clearForm() {
             document.getElementById('professorForm').reset();

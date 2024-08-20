@@ -70,7 +70,7 @@ $resultado = mysqli_query($conn, $sql);
                 <h1 class="text-center">Agendamentos</h1>
                 <div style="overflow-x:auto;">
                     <div class="pesquisa">
-                        <form action="formAgendamentos.php" method="post" class="mb-4">
+                        <form action="menuCoped.php" method="post" class="mb-4">
                             <div class="input-group input-group-sm" style="max-width: 300px;">
                                 <input type="search" class="form-control" placeholder="Pesquisar" id="pesquisar" name="busca">
                                 <div class="input-group-append">
@@ -150,7 +150,7 @@ $resultado = mysqli_query($conn, $sql);
                                                     <button class='btn action-button edit-button me-2' data-bs-toggle='modal' data-bs-target='#exampleModal' onclick='editAgendamento(<?= json_encode($row); ?>)'><i class='fas fa-pencil-alt'></i></button>
 
                                                     <!-- Formulário de exclusão -->
-                                                    <form action='../controls/cadastrarAgendamento.php' method='POST' style='display:inline-block;'>
+                                                    <form action='../controls/cadastrarAgendamento_1.php.php' method='POST' style='display:inline-block;'>
                                                         <input type='hidden' name='idAgendamento' value='<?= htmlspecialchars($row['idAgendamento']); ?>'>
                                                         <input type='hidden' name='action' value='delete'>
 
@@ -177,15 +177,15 @@ $resultado = mysqli_query($conn, $sql);
                         <nav aria-label="Page navigation">
                             <ul class="pagination justify-content-center">
                                 <li class="page-item <?php echo ($pagina <= 1) ? 'disabled' : ''; ?>">
-                                    <a class="page-link" href="<?php echo ($pagina > 1) ? 'formAgendamentos.php?pagina=' . ($pagina - 1) : '#'; ?>" aria-label="Previous">
+                                    <a class="page-link" href="<?php echo ($pagina > 1) ? 'menuCoped.php?pagina=' . ($pagina - 1) : '#'; ?>" aria-label="Previous">
                                         <span aria-hidden="true">&laquo;</span>
                                     </a>
                                 </li>
                                 <?php for ($i = 1; $i <= $num_pagina; $i++) { ?>
-                                    <li class="page-item <?php echo ($pagina == $i) ? 'active' : ''; ?>"><a class="page-link" href="formAgendamentos.php?pagina=<?php echo $i; ?>"><?php echo $i; ?></a></li>
+                                    <li class="page-item <?php echo ($pagina == $i) ? 'active' : ''; ?>"><a class="page-link" href="menuCoped.php?pagina=<?php echo $i; ?>"><?php echo $i; ?></a></li>
                                 <?php } ?>
                                 <li class="page-item <?php echo ($pagina >= $num_pagina) ? 'disabled' : ''; ?>">
-                                    <a class="page-link" href="<?php echo ($pagina < $num_pagina) ? 'formAgendamentos.php?pagina=' . ($pagina + 1) : '#'; ?>" aria-label="Next">
+                                    <a class="page-link" href="<?php echo ($pagina < $num_pagina) ? 'menuCoped.php?pagina=' . ($pagina + 1) : '#'; ?>" aria-label="Next">
                                         <span aria-hidden="true">&raquo;</span>
                                     </a>
                                 </li>
@@ -202,7 +202,7 @@ $resultado = mysqli_query($conn, $sql);
                                     </div>
 
                                     <div class="modal-body">
-                                        <form id="agendamentoForm" action="../controls/cadastrarAgendamento.php" method="POST">
+                                        <form id="agendamentoForm" action="../controls/cadastrarAgendamento_1.php.php" method="POST">
                                             <input type="hidden" id="idAgendamento" name="idAgendamento">
                                             <input type="hidden" id="action" name="action" value="add">
 
