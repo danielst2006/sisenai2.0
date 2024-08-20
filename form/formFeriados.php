@@ -109,11 +109,13 @@ $resultado = mysqli_query($conn, $sql);
                                 // Verifica se há feriados e exibe cada um em uma linha da tabela
                                 if (mysqli_num_rows($resultado) > 0) {
                                     while ($row = mysqli_fetch_assoc($resultado)) {
+                                        // Formata a data no formato brasileiro
+                                        $dia_feriado = date('d/m/Y', strtotime($row['dia_feriado']));
                                 ?>
                                         <tr>
                                             <td class='text-center'><?= htmlspecialchars($row['idFeriados']); ?></td>
                                             <td class='text-center'><?= htmlspecialchars($row['nome']); ?></td>
-                                            <td class='text-center'><?= htmlspecialchars($row['dia_feriado']); ?></td>
+                                            <td class='text-center'><?= htmlspecialchars($dia_feriado); ?></td>
                                             <td class='text-center'><?= htmlspecialchars($row['tipo']); ?></td>
                                             <td class='text-center'>
                                                 <div class='d-flex justify-content-center'>
@@ -124,8 +126,6 @@ $resultado = mysqli_query($conn, $sql);
                                                     <form action='../controls/cadastrarFeriados.php' method='POST' style='display:inline-block;'>
                                                         <input type='hidden' name='idFeriados' value='<?= htmlspecialchars($row['idFeriados']); ?>'>
                                                         <input type='hidden' name='action' value='delete'>
-
-                                                        <!-- Botão de exclusão com confirmação -->
                                                         <button type='submit' class='btn action-button delete-button' onclick='return confirm("Tem certeza que deseja excluir este feriado?")'><i class='fas fa-times'></i></button>
                                                     </form>
                                                 </div>
@@ -135,7 +135,6 @@ $resultado = mysqli_query($conn, $sql);
                                     }
                                 } else {
                                     ?>
-                                    <!-- Mensagem quando não há feriados -->
                                     <tr>
                                         <td colspan='5'>Nenhum feriado encontrado</td>
                                     </tr>
@@ -213,7 +212,11 @@ $resultado = mysqli_query($conn, $sql);
         function editFeriado(data) {
             document.getElementById('idFeriados').value = data.idFeriados;
             document.getElementById('nome').value = data.nome;
-            document.getElementById('dia_feriado').value = data.dia_feriado;
+
+            // Converte a data no formato DD/MM/YYYY para o formato YYYY-MM-DD
+            var dataFormatada = data.dia_feriado.split('/').reverse().join('-');
+            document.getElementById('dia_feriado').value = dataFormatada;
+
             document.getElementById('tipo').value = data.tipo;
             document.getElementById('action').value = 'update';
             document.querySelector('.modal-title').textContent = 'Editar Feriado';
