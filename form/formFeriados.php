@@ -98,11 +98,13 @@ $resultado = mysqli_query($conn, $sql);
                                 // Verifica se há feriados e exibe cada um em uma linha da tabela
                                 if (mysqli_num_rows($resultado) > 0) {
                                     while ($row = mysqli_fetch_assoc($resultado)) {
+                                        // Formata a data no formato brasileiro
+                                        $dia_feriado = date('d/m/Y', strtotime($row['dia_feriado']));
                                 ?>
                                         <tr>
                                             <td class='text-center'><?= htmlspecialchars($row['idFeriados']); ?></td>
                                             <td class='text-center'><?= htmlspecialchars($row['nome']); ?></td>
-                                            <td class='text-center'><?= htmlspecialchars($row['dia_feriado']); ?></td>
+                                            <td class='text-center'><?= htmlspecialchars($dia_feriado); ?></td>
                                             <td class='text-center'><?= htmlspecialchars($row['tipo']); ?></td>
                                             <td class='text-center'>
                                                 <div class='d-flex justify-content-center'>
@@ -113,8 +115,6 @@ $resultado = mysqli_query($conn, $sql);
                                                     <form action='../controls/cadastrarFeriados.php' method='POST' style='display:inline-block;'>
                                                         <input type='hidden' name='idFeriados' value='<?= htmlspecialchars($row['idFeriados']); ?>'>
                                                         <input type='hidden' name='action' value='delete'>
-
-                                                        <!-- Botão de exclusão com confirmação -->
                                                         <button type='submit' class='btn action-button delete-button' onclick='return confirm("Tem certeza que deseja excluir este feriado?")'><i class='fas fa-times'></i></button>
                                                     </form>
                                                 </div>
@@ -124,7 +124,6 @@ $resultado = mysqli_query($conn, $sql);
                                     }
                                 } else {
                                     ?>
-                                    <!-- Mensagem quando não há feriados -->
                                     <tr>
                                         <td colspan='5'>Nenhum feriado encontrado</td>
                                     </tr>
@@ -151,42 +150,49 @@ $resultado = mysqli_query($conn, $sql);
                                 </li>
                             </ul>
                         </nav>
+<!-- Modal para adicionar/editar feriados -->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Adicionar Novo Feriado</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
 
-                        <!-- Modal para adicionar/editar feriados -->
-                        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                            <div class="modal-dialog">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title" id="exampleModalLabel">Adicionar Novo Feriado</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                    </div>
+            <div class="modal-body">
+                <form id="feriadosForm" action="../controls/cadastrarFeriados.php" method="POST">
+                    <input type="hidden" id="idFeriados" name="idFeriados">
+                    <input type="hidden" id="action" name="action" value="add">
 
-                                    <div class="modal-body">
-                                        <form id="feriadosForm" action="../controls/cadastrarFeriados.php" method="POST">
-                                            <input type="hidden" id="idFeriados" name="idFeriados">
-                                            <input type="hidden" id="action" name="action" value="add">
+                    <div class="mb-3">
+                        <label for="nome" class="form-label">Nome do Feriado</label>
+                        <input type="text" class="form-control" id="nome" name="nome" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="dia_feriado" class="form-label">Dia do Feriado</label>
+                        <input type="date" class="form-control" id="dia_feriado" name="dia_feriado" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="tipo" class="form-label">Tipo de Feriado</label>
+                        <select class="form-select" id="tipo" name="tipo" required>
+                            <option value="" disabled selected>Escolha o tipo de feriado</option>
+                            <option value="Municipal">Municipal</option>
+                            <option value="Estadual">Estadual</option>
+                            <option value="Nacional">Nacional</option>
+                            <option value="Ponto Facultativo">Ponto Facultativo</option>
+                            <option value="Interno">Interno</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                <button type="submit" class="btn btn-primary" onclick="submitForm()">Salvar</button>
+            </div>
+        </div>
+    </div>
+</div>
 
-                                            <div class="mb-3">
-                                                <label for="nome" class="form-label">Nome do Feriado</label>
-                                                <input type="text" class="form-control" id="nome" name="nome" required>
-                                            </div>
-                                            <div class="mb-3">
-                                                <label for="dia_feriado" class="form-label">Dia do Feriado</label>
-                                                <input type="date" class="form-control" id="dia_feriado" name="dia_feriado" required>
-                                            </div>
-                                            <div class="mb-3">
-                                                <label for="tipo" class="form-label">Tipo de Feriado</label>
-                                                <input type="text" class="form-control" id="tipo" name="tipo" required>
-                                            </div>
-                                        </form>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-                                        <button type="submit" class="btn btn-primary" onclick="submitForm()">Salvar</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
 
                     </div>
                 </div>
@@ -202,7 +208,11 @@ $resultado = mysqli_query($conn, $sql);
         function editFeriado(data) {
             document.getElementById('idFeriados').value = data.idFeriados;
             document.getElementById('nome').value = data.nome;
-            document.getElementById('dia_feriado').value = data.dia_feriado;
+
+            // Converte a data no formato DD/MM/YYYY para o formato YYYY-MM-DD
+            var dataFormatada = data.dia_feriado.split('/').reverse().join('-');
+            document.getElementById('dia_feriado').value = dataFormatada;
+
             document.getElementById('tipo').value = data.tipo;
             document.getElementById('action').value = 'update';
             document.querySelector('.modal-title').textContent = 'Editar Feriado';

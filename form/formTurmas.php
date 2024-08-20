@@ -79,13 +79,23 @@ $resultado = mysqli_query($conn, $sql);
                                 // Exibe uma mensagem de sucesso ou erro com base no parâmetro de status na URL
                                 if (isset($_GET['status'])) {
                                     if ($_GET['status'] == 'success') {
-                                        echo '<div class="alert alert-success mb-0" style="display: inline-block" role="alert">Operação realizada com sucesso!</div>';
+                                        echo '<div id="alertBox" class="alert alert-success mb-0" style="display: inline-block" role="alert">Operação realizada com sucesso!</div>';
                                     } else if ($_GET['status'] == 'error') {
-                                        echo '<div class="alert alert-danger mb-0" style="display: inline-block" role="alert">Erro ao realizar a operação</div>';
+                                        echo '<div id="alertBox" class="alert alert-danger mb-0" style="display: inline-block" role="alert">Erro ao realizar a operação</div>';
                                     }
                                 }
                                 ?>
                             </div>
+
+                            <script>
+                                // Esconde a mensagem de alerta após 5 segundos
+                                setTimeout(function() {
+                                    var alertBox = document.getElementById('alertBox');
+                                    if (alertBox) {
+                                        alertBox.style.display = 'none';
+                                    }
+                                }, 5000); // 5000 ms = 5 segundos
+                            </script>
 
                             <div>
                                 <!-- Botão para abrir o modal de adição de novas turmas -->
@@ -200,6 +210,23 @@ $resultado = mysqli_query($conn, $sql);
                                                 <label for="data_fim" class="form-label">Data Fim</label>
                                                 <input type="date" class="form-control" id="data_fim" name="data_fim" required>
                                             </div>
+
+                                            <script>
+                                                function validarDatas() {
+                                                    var dataInicio = document.getElementById('data_inicio').value;
+                                                    var dataFim = document.getElementById('data_fim').value;
+
+                                                    if (dataInicio && dataFim) {
+                                                        if (new Date(dataInicio) > new Date(dataFim)) {
+                                                            alert('A data de início não pode ser posterior à data de fim.');
+                                                            document.getElementById('data_fim').value = ''; // Limpa o campo de data fim se for inválido
+                                                        }
+                                                    }
+                                                }
+
+                                                document.getElementById('data_fim').addEventListener('change', validarDatas);
+                                            </script>
+
                                             <div class="mb-3">
                                                 <label for="horario_inicio" class="form-label">Horário Início</label>
                                                 <input type="time" class="form-control" id="horario_inicio" name="horario_inicio" required>
@@ -208,6 +235,23 @@ $resultado = mysqli_query($conn, $sql);
                                                 <label for="horario_final" class="form-label">Horário Final</label>
                                                 <input type="time" class="form-control" id="horario_final" name="horario_final" required>
                                             </div>
+
+                                            <script>
+                                                function validarHorarios() {
+                                                    var horarioInicio = document.getElementById('horario_inicio').value;
+                                                    var horarioFim = document.getElementById('horario_final').value;
+
+                                                    if (horarioInicio && horarioFim) {
+                                                        if (horarioInicio > horarioFim) {
+                                                            alert('O horário de início não pode ser posterior ao horário de fim.');
+                                                            document.getElementById('horario_final').value = ''; // Limpa o campo de horário final se for inválido
+                                                        }
+                                                    }
+                                                }
+
+                                                document.getElementById('horario_final').addEventListener('change', validarHorarios);
+                                            </script>
+
                                             <div class="mb-3">
                                                 <label for="status" class="form-label">Status</label>
                                                 <select class="form-select" id="status" name="status" required>
