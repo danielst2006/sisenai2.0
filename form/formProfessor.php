@@ -1,5 +1,5 @@
 <?php
-// Inclui o arquivo de menuuuuu
+// Inclui o arquivo de menu
 include_once '../head/menu.html';
 include_once "../bd/conn.php";
 
