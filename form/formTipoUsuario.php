@@ -43,6 +43,20 @@ $resultado = mysqli_query($conn, $sql);
     <title>Cadastro de Tipos de Usuário</title>
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/css/bootstrap.min.css">
+    <style>
+        .text-gray {
+            color: #6c757d; /* Cor cinza padrão do Bootstrap */
+        }
+        .btn-custom-gray {
+            background-color: #6c757d; /* Cinza padrão do Bootstrap */
+            border-color: #6c757d;
+            color: white;
+        }
+        .btn-custom-gray:hover {
+            background-color: #5a6268; /* Cinza um pouco mais escuro para o efeito de hover */
+            border-color: #545b62;
+        }
+    </style>
 </head>
 
 <body class="bg-light text-dark">
@@ -50,7 +64,7 @@ $resultado = mysqli_query($conn, $sql);
     <div class="container">
         <div class="row">
             <div class="col-lg-12">
-                <h1 class="text-center">Tipos de Usuário</h1>
+                <h1 class="text-center">Tipos de Usuário</h1> 
                 <div style="overflow-x:auto;">
                     <div class="pesquisa">
                         <form action="formTipoUsuario.php" method="post" class="mb-4">
@@ -82,7 +96,9 @@ $resultado = mysqli_query($conn, $sql);
 
                             <div>
                                 <!-- Botão para abrir o modal de adição de novo tipo de usuário -->
-                                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal" onclick="clearForm()">Adicionar Novo Tipo de Usuário</button>
+                                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal" onclick="clearForm()">Tipo de Usuário</button>
+                                <!-- Botão para abrir o modal de adição de novos usuários -->
+                                <a href="formUsuarios.php" class="btn btn-custom-gray">Usuário</a>
                             </div>
                         </div>
 

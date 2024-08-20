@@ -88,6 +88,8 @@ $resultado = mysqli_query($conn, $sql);
                             <div>
                                 <!-- Botão para abrir o modal de adição de novos usuários -->
                                 <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal" onclick="clearForm()">Adicionar Novo Usuário</button>
+                                <a href="formTipoUsuario.php" class="btn btn-secondary">Tipo de Usuário</a>
+
                             </div>
                         </div>
 
