@@ -123,11 +123,14 @@ $resultado = mysqli_query($conn, $sql);
                                 // Verifica se há agendamentos e exibe cada um em uma linha da tabela
                                 if (mysqli_num_rows($resultado) > 0) {
                                     while ($row = mysqli_fetch_assoc($resultado)) {
-                                ?>
+                                        // Converte a data de início e a data de término para o formato brasileiro
+                                        $data_inicio_br = date('d/m/Y H:i:s', strtotime($row['data_inicio']));
+                                        $data_final_br = date('d/m/Y H:i:s', strtotime($row['data_final']));
+                                    ?>
                                         <tr>
                                             <td class='text-center'><?= htmlspecialchars($row['idAgendamento']); ?></td>
-                                            <td class='text-center'><?= htmlspecialchars($row['data_inicio']); ?></td>
-                                            <td class='text-center'><?= htmlspecialchars($row['data_final']); ?></td>
+                                            <td class='text-center'><?= htmlspecialchars($data_inicio_br); ?></td>
+                                            <td class='text-center'><?= htmlspecialchars($data_final_br); ?></td>
                                             <td class='text-center'><?= htmlspecialchars($row['nome_usuario']); ?></td>
                                             <td class='text-center'><?= htmlspecialchars($row['nome_unidade']); ?></td>
                                             <td class='text-center'><?= htmlspecialchars($row['nome_turma']); ?></td>
@@ -137,12 +140,12 @@ $resultado = mysqli_query($conn, $sql);
                                                 <div class='d-flex justify-content-center'>
                                                     <!-- Botão de edição -->
                                                     <button class='btn action-button edit-button me-2' data-bs-toggle='modal' data-bs-target='#exampleModal' onclick='editAgendamento(<?= json_encode($row); ?>)'><i class='fas fa-pencil-alt'></i></button>
-
+                                    
                                                     <!-- Formulário de exclusão -->
                                                     <form action='../controls/cadastrarAgendamento.php' method='POST' style='display:inline-block;'>
                                                         <input type='hidden' name='idAgendamento' value='<?= htmlspecialchars($row['idAgendamento']); ?>'>
                                                         <input type='hidden' name='action' value='delete'>
-
+                                    
                                                         <!-- Botão de exclusão com confirmação -->
                                                         <button type='submit' class='btn action-button delete-button' onclick='return confirm("Tem certeza que deseja excluir este agendamento?")'><i class='fas fa-times'></i></button>
                                                     </form>
@@ -151,6 +154,7 @@ $resultado = mysqli_query($conn, $sql);
                                         </tr>
                                     <?php
                                     }
+                                    
                                 } else {
                                     ?>
                                     <!-- Mensagem quando não há agendamentos -->
