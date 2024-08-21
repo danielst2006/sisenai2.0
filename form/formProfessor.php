@@ -31,7 +31,7 @@ $total_professor = mysqli_fetch_assoc($consulta)['total'];
 $num_pagina = ceil($total_professor / $quantidade_pg);
 
 // Consulta para buscar os professores
-$sql = "SELECT p.idProfessor, p.nome, p.email, p.telefone, u.nome_usuario AS usuario, p.area, p.tipo_contrato 
+$sql = "SELECT p.idProfessor, p.nome, p.email, p.telefone, u.idUsuario, u.nome_usuario AS usuario, p.area, p.tipo_contrato 
         FROM professores p 
         JOIN usuarios u ON p.usuario_id = u.idUsuario 
         WHERE p.nome LIKE CONCAT('%', '$pesquisa', '%') 
@@ -281,28 +281,26 @@ $resultado = mysqli_query($conn, $sql);
     <script>
         // Função para preencher o formulário no modal para edição
         function editProfessor(data) {
-            document.getElementById('idProfessor').value = data.idProfessor;
-            document.getElementById('nome').value = data.nome;
-            document.getElementById('email').value = data.email;
-            document.getElementById('telefone').value = data.telefone;
-            document.getElementById('usuario_id').value = data.usuario_id;
-            document.getElementById('nome_usuario').value = data.nome_usuario;
-            document.getElementById('area').value = data.area;
-            document.getElementById('tipo_contrato').value = data.tipo_contrato;
-        
-       let usuarioSelect = document.getElementById('usuario_id');
+    document.getElementById('idProfessor').value = data.idProfessor;
+    document.getElementById('nome').value = data.nome;
+    document.getElementById('email').value = data.email;
+    document.getElementById('telefone').value = data.telefone;
+    document.getElementById('area').value = data.area;
+    document.getElementById('tipo_contrato').value = data.tipo_contrato;
 
-// Percorre as opções do select e define a que corresponde ao nome do usuário
-     for (let i = 0; i < usuarioSelect.options.length; i++) {
-       if (usuarioSelect.options[i].text === data.nome_usuario) {
-          usuarioSelect.selectedIndex = i;
-           break;
-      }
-  }
+    let usuarioSelect = document.getElementById('usuario_id');
 
-            document.getElementById('action').value = 'update';
-            document.querySelector('.modal-title').textContent = 'Editar Professor';
+    // Percorre as opções do select e define a que corresponde ao id do usuário
+    for (let i = 0; i < usuarioSelect.options.length; i++) {
+        if (usuarioSelect.options[i].value == data.idUsuario) {
+            usuarioSelect.selectedIndex = i;
+            break;
         }
+    }
+
+    document.getElementById('action').value = 'update';
+    document.querySelector('.modal-title').textContent = 'Editar Professor';
+}
 
         // Função para limpar o formulário no modal para adicionar novos professores
         function clearForm() {

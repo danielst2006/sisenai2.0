@@ -19,9 +19,9 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
     $resultado = mysqli_query($conn, $sql);
     if ($resultado) {
-        header('Location: ../form/formSala.php?status=success');
+        header('Location: ../form/formSalas.php?status=success');
     } else {
-        header('Location: ../form/formSala.php?status=error');
+        header('Location: ../form/formSalas.php?status=error');
     }
     exit();
 }
