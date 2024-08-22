@@ -1,6 +1,6 @@
 <?php
 // Inclui o arquivo de menu
-include_once '../head/menu.html';
+include_once '../head/menu.php';
 include_once "../bd/conn.php";
 
 if (isset($_POST['busca'])) {
