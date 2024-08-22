@@ -13,7 +13,7 @@ if ($action == 'insert') {
     $tipo_usuario_id = isset($_POST['tipo_usuario_id']) ? $_POST['tipo_usuario_id'] : '';
     $codigo_acesso = isset($_POST['codigo_acesso']) ? $_POST['codigo_acesso'] : '';
 
-    // Verificar se todos os campos obrigatórios estão preenchidos
+    // Verificar se todos os campos obrigatórios estão preenchidoss
     if ($nome_usuario && $email && $telefone && $senha && $tipo_contrato && $tipo_usuario_id && $codigo_acesso) {
         // Verificar se o e-mail já está cadastrado
         $checkEmailQuery = "SELECT COUNT(*) AS total FROM usuarios WHERE email = '$email'";
