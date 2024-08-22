@@ -1,6 +1,32 @@
 <?php 
+// Inclui o arquivo de conexão com o banco de dados
+include_once '../bd/conn.php';
+
 // Inclui o arquivo de menu
 include_once '../head/menu.html';
+
+// Número de registros por página
+$pagina = isset($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
+$quantidade_pg = 5;
+$inicio = ($quantidade_pg * $pagina) - $quantidade_pg;
+
+// Calcular o número total de registros
+$sql = "SELECT COUNT(*) AS total FROM andar";
+$result = mysqli_query($conn, $sql);
+
+if ($result === false) {
+    die("Error in SQL query: " . mysqli_error($conn));
+}
+
+$total_tipo = mysqli_fetch_assoc($result)['total'];
+$num_pagina = ceil($total_tipo / $quantidade_pg);
+
+// Calcular o índice inicial dos registros
+$start_from = ($pagina - 1) * $quantidade_pg;
+
+// Consulta SQL para buscar andares com limite e offset
+$sql = "SELECT * FROM andar LIMIT $start_from, $quantidade_pg";
+$resultado = mysqli_query($conn, $sql);
 ?>
 
 <!DOCTYPE html>
@@ -22,7 +48,6 @@ include_once '../head/menu.html';
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <div class="flex-grow-1">
                         <?php
-                        // Exibe uma mensagem de sucesso ou erro com base no parâmetro de status na URL
                         if (isset($_GET['status'])) {
                             if ($_GET['status'] == 'success') {
                                 echo '<div class="alert alert-success mb-0" style="display: inline-block" role="alert">Operação realizada com sucesso!</div>';
@@ -34,12 +59,11 @@ include_once '../head/menu.html';
                     </div>
 
                     <div>
-                        <!-- Botão para abrir o modal de adição de nova sala -->
+                        <a href="formAndar.php" class="btn btn-primary ms-2">Andar</a>
                         <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal" onclick="clearForm()">Adicionar Nova Sala</button>
                     </div>
                 </div>
 
-                <!-- Tabela de salas -->
                 <table class='table rounded-table'>
                     <thead>
                         <tr>
@@ -51,14 +75,10 @@ include_once '../head/menu.html';
                     </thead>
                     <tbody>
                         <?php 
-                        // Conexão com o banco de dados
-                        include_once '../bd/conn.php';
-
                         // Consulta SQL para buscar salas junto com o nome do andar
-                        $sql = "SELECT s.id_sala, s.nome as nome_sala, andar.nome as nome_andar, andar.id_andar FROM salas s JOIN andar ON andar_id = andar.id_andar";
+                        $sql = "SELECT s.id_sala, s.nome AS nome_sala, andar.nome AS nome_andar, andar.id_andar FROM salas s JOIN andar ON s.andar_id = andar.id_andar";
                         $resultado = mysqli_query($conn, $sql);
 
-                        // Verifica se há salas e exibe cada uma em uma linha da tabela
                         if (mysqli_num_rows($resultado) > 0) {
                             while ($row = mysqli_fetch_assoc($resultado)) {
                         ?>
@@ -68,15 +88,10 @@ include_once '../head/menu.html';
                             <td class='text-center'><?= htmlspecialchars($row['nome_andar']); ?></td>
                             <td class='text-center'>
                                 <div class='d-flex justify-content-center'>
-                                    <!-- Botão de edição -->
                                     <button class='btn action-button edit-button me-2' data-bs-toggle='modal' data-bs-target='#exampleModal' onclick='editRoom(<?= json_encode($row); ?>)'><i class='fas fa-pencil-alt'></i></button>
-                                    
-                                    <!-- Formulário de exclusão -->
-                                    <form action='../controls/cadastrarSala.php' method='POST' style='display:inline-block;'>
+                                    <form action='../controls/cadastrarSalas.php' method='POST' style='display:inline-block;'>
                                         <input type='hidden' name='id_sala' value='<?= htmlspecialchars($row['id_sala']); ?>'>
                                         <input type='hidden' name='action' value='delete'>
-
-                                        <!-- Botão de exclusão com confirmação -->
                                         <button type='submit' class='btn action-button delete-button' onclick='return confirm("Tem certeza que deseja excluir esta sala?")'><i class='fas fa-times'></i></button>
                                     </form>
                                 </div>
@@ -86,8 +101,6 @@ include_once '../head/menu.html';
                             }
                         } else {
                         ?>
-                        
-                        <!-- Mensagem quando não há salas -->
                         <tr><td colspan='4'>Nenhuma sala encontrada</td></tr>
                         <?php 
                         }
@@ -105,7 +118,7 @@ include_once '../head/menu.html';
                       </div>
 
                       <div class="modal-body">
-                        <form id="roomForm" action="../controls/cadastrarSala.php" method="POST">
+                        <form id="roomForm" action="../controls/cadastrarSalas.php" method="POST">
                           <input type="hidden" id="id_sala" name="id_sala">
                           <input type="hidden" id="action" name="action" value="add">
 
@@ -121,11 +134,7 @@ include_once '../head/menu.html';
                                 // Consulta SQL para buscar todos os andares
                                 $sql_andar = "SELECT id_andar, nome FROM andar";
                                 $resultado_andar = mysqli_query($conn, $sql_andar);
-                                ?>
 
-                                <option value="" disabled selected>Selecione o andar</option>
-                                <?php
-                                // Preenche o dropdown com os andares disponíveis
                                 if (mysqli_num_rows($resultado_andar) > 0) {
                                     while ($andar = mysqli_fetch_assoc($resultado_andar)) {
                                         echo "<option value='" . htmlspecialchars($andar['id_andar']) . "'>" . htmlspecialchars($andar['nome']) . "</option>";
@@ -155,23 +164,42 @@ include_once '../head/menu.html';
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/js/bootstrap.min.js"></script>
 
 <script>
-// Função para limpar o formulário ao adicionar nova sala
 function clearForm() {
     document.getElementById('roomForm').reset();
-    document.getElementById('id_sala').value = ''; // ID não é necessário para adição, mas limpamos o campo para edições futuras
+    document.getElementById('id_sala').value = '';
     document.getElementById('action').value = 'add';
     document.getElementById('exampleModalLabel').innerText = 'Adicionar Nova Sala';
 }
 
-// Função para preencher o formulário ao editar uma sala
 function editRoom(room) {
     document.getElementById('id_sala').value = room.id_sala;
     document.getElementById('nome').value = room.nome_sala;
-    document.getElementById('andar_id').value = room.id_andar; // Corrigido para usar o id_andar
+    document.getElementById('andar_id').value = room.id_andar;
     document.getElementById('action').value = 'update';
     document.getElementById('exampleModalLabel').innerText = 'Atualizar Sala';
 }
 </script>
+
+<!-- Navegação de paginação -->
+<nav aria-label="Page navigation">
+  <ul class="pagination justify-content-center">
+    <li class="page-item <?= $pagina <= 1 ? 'disabled' : ''; ?>">
+      <a class="page-link" href="<?= $pagina > 1 ? 'formSalas.php?pagina=' . ($pagina - 1) : '#'; ?>" aria-label="Previous">
+        <span aria-hidden="true">&laquo;</span>
+      </a>
+    </li>
+    <?php for ($i = 1; $i <= $num_pagina; $i++): ?>
+    <li class="page-item <?= $pagina == $i ? 'active' : ''; ?>">
+      <a class="page-link" href="formSalas.php?pagina=<?= $i; ?>"><?= $i; ?></a>
+    </li>
+    <?php endfor; ?>
+    <li class="page-item <?= $pagina >= $num_pagina ? 'disabled' : ''; ?>">
+      <a class="page-link" href="<?= $pagina < $num_pagina ? 'formSalas.php?pagina=' . ($pagina + 1) : '#'; ?>" aria-label="Next">
+        <span aria-hidden="true">&raquo;</span>
+      </a>
+    </li>
+  </ul>
+</nav>
 
 </body>
 </html>

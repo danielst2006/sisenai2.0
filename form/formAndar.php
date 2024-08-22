@@ -1,6 +1,41 @@
 <?php 
 // Inclui o arquivo de menu
+include_once '../bd/conn.php';
 include_once '../head/menu.html';
+
+
+// Conexão com o banco de dados
+include_once '../bd/conn.php';
+
+// Número de registros por página
+$records_per_page = 10;
+
+// Calcular o número total de registros
+$total_records_sql = "SELECT COUNT(*) FROM andar";
+$total_records_result = mysqli_query($conn, $total_records_sql);
+$total_records_row = mysqli_fetch_array($total_records_result);
+$total_records = $total_records_row[0];
+
+// Calcular o número total de páginas
+$total_pages = ceil($total_records / $records_per_page);
+
+// Obter o número da página atual
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+$page = max(1, min($total_pages, $page)); // Garantir que a página atual esteja dentro dos limites
+
+// Calcular o índice inicial dos registros
+$start_from = ($page - 1) * $records_per_page;
+
+// Consulta SQL para buscar andares com limite e offset
+$sql = "SELECT * FROM andar LIMIT $start_from, $records_per_page";
+$resultado = mysqli_query($conn, $sql);
+
+
+
+
+
+
+
 ?>
 
 <!DOCTYPE html>
@@ -34,6 +69,10 @@ include_once '../head/menu.html';
                     </div>
 
                     <div>
+                        <!-- Botão para gerenciar salas -->
+                        <a href="formSalas.php" class="btn btn-primary me-2">Salas</a>
+
+
                         <!-- Botão para abrir o modal de adição de novo andar -->
                         <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal" onclick="clearForm()">Adicionar Novo Andar</button>
                     </div>
@@ -147,6 +186,31 @@ function editFloor(floor) {
     document.getElementById('exampleModalLabel').innerText = 'Atualizar Andar';
 }
 </script>
+
+
+<!-- Navegação de paginação -->
+<nav aria-label="Page navigation">
+  <ul class="pagination justify-content-center">
+    <li class="page-item <?= $page <= 1 ? 'disabled' : ''; ?>">
+      <a class="page-link" href="?page=<?= $page - 1; ?>" aria-label="Previous">
+        <span aria-hidden="true">&laquo;</span>
+      </a>
+    </li>
+    <?php for ($i = 1; $i <= $total_pages; $i++): ?>
+    <li class="page-item <?= $i == $page ? 'active' : ''; ?>">
+      <a class="page-link" href="?page=<?= $i; ?>"><?= $i; ?></a>
+    </li>
+    <?php endfor; ?>
+    <li class="page-item <?= $page >= $total_pages ? 'disabled' : ''; ?>">
+      <a class="page-link" href="?page=<?= $page + 1; ?>" aria-label="Next">
+        <span aria-hidden="true">&raquo;</span>
+      </a>
+    </li>
+  </ul>
+</nav>
+
+
+
 
 </body>
 </html>
