@@ -1,16 +1,16 @@
 <?php
-include_once '../head/menu.html';
+include_once '../head/menu.php';
 session_start();
 
-// // Verifica se o usuário está logado
-// if (!isset($_SESSION['nome_de_usuario'])) {
-//     header("Location: login.php"); // Redireciona para a página de login se não estiver logado
-//     exit();
-// }
+// Verifica se o usuário está logado
+if (!isset($_SESSION['login'])) {
+    header("Location: login.php"); // Redireciona para a página de login se não estiver logado
+    exit();
+}
 
 include_once '../bd/conn.php';
 
-$nome_de_usuario = $_SESSION['nome_usuario'];
+$nome_de_usuario = $_SESSION['login'];
 
 // Recupera os dados do usuário do banco de dados
 $sql = "SELECT * FROM usuarios WHERE nome_de_usuario = '$nome_de_usuario'";

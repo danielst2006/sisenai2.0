@@ -1,3 +1,5 @@
+/* Estilos Originais */
+
 .sidebar {
   height: 100%;
   width: 0;
@@ -9,7 +11,6 @@
   transition: 0.5s;
   padding-top: 60px;
 }
-
 
 .logo {
   position: absolute;
@@ -101,6 +102,7 @@
   background-color: #444;
 }
 
+/* Estilo da Tabela Redonda */
 
 .rounded-table {
     border-collapse: separate;
@@ -108,21 +110,27 @@
     border-radius: 15px;
     overflow: hidden;
 }
+
 .rounded-table th, .rounded-table td {
     border: none;
 }
+
 .rounded-table thead th {
     background-color: #d3d3d3;
 }
+
 .rounded-table tbody tr {
     background-color: #ffffff;
 }
+
 .rounded-table tbody tr:nth-child(even) {
     background-color: #f2f2f2;
 }
+
 .rounded-table tbody tr:hover {
     background-color: #e9ecef;
 }
+
 .rounded-table td, .rounded-table th {
     padding: 12px;
 }
@@ -130,12 +138,16 @@
 .rounded-table tbody tr:last-child td:first-child {
     border-bottom-left-radius: 15px;
 }
+
 .rounded-table tbody tr:last-child td:last-child {
     border-bottom-right-radius: 15px;
 }
+
 .btn-rounded {
     border-radius: 20px;
 }
+
+/* Corpo e Container de Formulário */
 
 body {
   margin: 0;
@@ -235,6 +247,8 @@ body {
   font-size: 1rem;
 }
 
+/* Corpo e Login */
+
 .corpo {
   display: flex;
   align-items: center;
@@ -268,27 +282,37 @@ body {
   position: relative; /* Necessário para manter o contexto de empilhamento */
 }
 
+/* Cartão de Perfil */
+
 .img-account-profile {
     height: 10rem;
 }
+
 .rounded-circle {
     border-radius: 50% !important;
 }
+
 .card {
     box-shadow: 0 0.15rem 1.75rem 0 rgb(33 40 50 / 15%);
 }
+
 .card .card-header {
     font-weight: 500;
 }
+
 .card-header:first-child {
     border-radius: 0.35rem 0.35rem 0 0;
 }
+
 .card-header {
     padding: 1rem 1.35rem;
     margin-bottom: 0;
     background-color: rgba(33, 40, 50, 0.03);
     border-bottom: 1px solid rgba(33, 40, 50, 0.125);
 }
+
+/* Formulários e Navegação */
+
 .form-control, .dataTable-input {
     display: block;
     width: 100%;
@@ -311,6 +335,7 @@ body {
     color: #0061f2;
     border-bottom-color: #0061f2;
 }
+
 .nav-borders .nav-link {
     color: #69707a;
     border-bottom-width: 0.125rem;
@@ -323,3 +348,44 @@ body {
     margin-left: 1rem;
     margin-right: 1rem;
 }
+
+/* Adaptação para o Dashboard */
+
+.dashboard-container {
+    display: flex;
+    justify-content: space-between;
+    padding: 20px;
+    margin-top: 20px; /* Espaçamento adicional para não sobrepor o cabeçalho */
+}
+
+.live-classes, .coordinator-classes {
+    width: 48%;
+    background-color: #fff;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+table, th, td {
+    border: 1px solid #ddd;
+}
+
+th, td {
+    padding: 10px;
+    text-align: left;
+}
+
+thead {
+    background-color: #f9f9f9;
+}
+
+tbody tr:nth-child(even) {
+    background-color: #f1f1f1;
+}
+

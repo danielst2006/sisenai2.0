@@ -1,5 +1,5 @@
 <?php 
 
-include_once 'head/menu.html';
+include_once "../sisenai2.0/controls/checklogin.php";
 
-
+?>
