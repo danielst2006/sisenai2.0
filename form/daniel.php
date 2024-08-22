@@ -10,6 +10,21 @@
         header('Location: ../form/login.php');
     }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+
     include_once "../bd/conn.php";
     //Agendamento do usuário
     $sql = "SELECT a.idAgendamento AS id, 
