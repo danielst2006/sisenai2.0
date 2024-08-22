@@ -1,4 +1,17 @@
 <?php
+
+session_start();
+
+if(isset($_SESSION['login'])){
+    if($_SESSION['tipo_usuario'] == "COPED" || $_SESSION['tipo_usuario'] == "ADM"){
+
+    } else {
+        header('Location: ../form/menu.php');
+    }
+} else {
+    header('Location: ../form/login.php');
+}
+
 // Inclui o arquivo de menu
 include_once '../head/menu.html';
 include_once "../bd/conn.php";
