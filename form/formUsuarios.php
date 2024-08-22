@@ -72,7 +72,7 @@ $resultado = mysqli_query($conn, $sql);
                         </form>
 
                         <div class="d-flex justify-content-between align-items-center mb-3">
-                        <div class="flex-grow-1">
+                            <div class="flex-grow-1">
                                 <?php
                                 // Exibe uma mensagem de sucesso ou erro com base no parâmetro de status na URL
                                 if (isset($_GET['status'])) {
@@ -248,6 +248,24 @@ $resultado = mysqli_query($conn, $sql);
                                 </div>
                             </div>
                         </div>
+
+
+                        <?php
+                        // Exibe uma mensagem de sucesso ou erro com base no parâmetro de status na URL
+                        if (isset($_GET['status'])) {
+                            if ($_GET['status'] == 'success') {
+                                echo '<div id="alertBox" class="alert alert-success mb-0" style="display: inline-block" role="alert">Operação realizada com sucesso!</div>';
+                            } else if ($_GET['status'] == 'error') {
+                                $message = isset($_GET['message']) ? htmlspecialchars($_GET['message']) : 'Erro ao realizar a operação';
+                                echo '<div id="alertBox" class="alert alert-danger mb-0" style="display: inline-block" role="alert">' . $message . '</div>';
+                            }
+                        }
+                        ?>
+
+
+
+
+
 
                         <script>
                             // Função para limpar o formulário e definir ação para 'insert'

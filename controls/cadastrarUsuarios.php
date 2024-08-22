@@ -15,6 +15,17 @@ if ($action == 'insert') {
 
     // Verificar se todos os campos obrigatórios estão preenchidos
     if ($nome_usuario && $email && $telefone && $senha && $tipo_contrato && $tipo_usuario_id && $codigo_acesso) {
+        // Verificar se o e-mail já está cadastrado
+        $checkEmailQuery = "SELECT COUNT(*) AS total FROM usuarios WHERE email = '$email'";
+        $result = mysqli_query($conn, $checkEmailQuery);
+        $row = mysqli_fetch_assoc($result);
+
+        if ($row['total'] > 0) {
+            // E-mail já existe
+            header("Location: ../form/formUsuarios.php?status=error&message=" . urlencode("E-mail já cadastrado."));
+            exit();
+        }
+
         // Inserir no banco de dados
         $sql = "INSERT INTO usuarios (nome_usuario, email, telefone, senha, tipo_contrato, tipo_usuario_id, codigo_acesso) 
                 VALUES ('$nome_usuario', '$email', '$telefone', '$senha', '$tipo_contrato', '$tipo_usuario_id', '$codigo_acesso')";
@@ -44,6 +55,17 @@ if ($action == 'insert') {
 
     // Verificar se todos os campos obrigatórios estão preenchidos
     if ($idUsuario && $nome_usuario && $email && $telefone && $senha && $tipo_contrato && $tipo_usuario_id && $codigo_acesso) {
+        // Verificar se o e-mail já está cadastrado para outro usuário
+        $checkEmailQuery = "SELECT COUNT(*) AS total FROM usuarios WHERE email = '$email' AND idUsuario != '$idUsuario'";
+        $result = mysqli_query($conn, $checkEmailQuery);
+        $row = mysqli_fetch_assoc($result);
+
+        if ($row['total'] > 0) {
+            // E-mail já existe
+            header("Location: ../form/formUsuarios.php?status=error&message=" . urlencode("E-mail já cadastrado."));
+            exit();
+        }
+
         // Atualizar no banco de dados
         $sql = "UPDATE usuarios SET nome_usuario='$nome_usuario', email='$email', telefone='$telefone', senha='$senha', 
                 tipo_contrato='$tipo_contrato', tipo_usuario_id='$tipo_usuario_id', codigo_acesso='$codigo_acesso' 
