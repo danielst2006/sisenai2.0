@@ -14,13 +14,14 @@
 </head>
 <body>
   <header>
-    <div class="navbar navbar-expand-md" style="background-color: rgb(218 224 233);">
-      <button class="openbtn" style="background-color: rgb(218 224 233);" onclick="openNav()">☰</button>
-      <button class="openbtn-profile ms-auto" style="background-color: rgb(218 224 233);" onclick="openProfileNav()">
-        <img src="/sisenai2.0/imagens/senai.png" alt="Logo" class="logo">
-        <i class="fas fa-user"></i>
-      </button>
-    </div>
+  <div class="navbar navbar-expand-md" style="background-color: rgb(218 224 233);">
+  <button class="openbtn" style="background-color: rgb(218 224 233);" onclick="openNav()">☰</button>
+  <p class="text-dark mx-auto my-auto">Olá, <?php echo $_SESSION['login']; ?></p>
+  <button class="openbtn-profile ms-auto" style="background-color: rgb(218 224 233);" onclick="openProfileNav()">
+    <img src="/sisenai2.0/imagens/senai.png" alt="Logo" class="logo">
+    <i class="fas fa-user"></i>
+  </button>
+</div>
 
     <div id="mySidebar" class="sidebar" style="background-color: rgb(231, 78, 22);">
       <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">×</a>
