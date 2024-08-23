@@ -1,103 +1,132 @@
 <?php 
-session_start();
-
-if(isset($_SESSION['login'])){
-    if($_SESSION['tipo_usuario'] == "COPED" || $_SESSION['tipo_usuario'] == "ADM"){
-
-    } else {
-        header('Location: ../form/menu.php');
-    }
-} else {
-    header('Location: ../form/login.php');
-}
 include_once "../head/menu.php";
 ?>
 
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <!-- Inclua seu head aqui -->
     <link rel="stylesheet" href="../css/style.css">
     <style>
-        /* Adaptação para o Dashboard */
-        .dashboard-container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            padding: 20px;
-            margin-top: 20px; /* Espaçamento adicional para não sobrepor o cabeçalho */
-        }
+    /* Adaptação para o Dashboard */
+    .dashboard-container {
+        display: left;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        padding: 50px;
+        margin-top: 30px;
+        margin-bottom: -98px;
+        /* Espaçamento adicional para não sobrepor o cabeçalho */
+    }
 
-        .live-classes, .coordinator-classes {
-            width: 48%;
-            background-color: #fff;
-            padding: 20px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            border-radius: 10px;
-            margin-bottom: 20px; /* Para espaçamento entre os blocos */
-        }
+    .live-classes,
+    .coordinator-classes {
+        width: 100%;
+        background-color: #fff;
+        padding: 20px;
+        box-shadow: 0 0 10px rgba(65,105,225);
+        border-radius: 20px;
+        margin-bottom: 45px;
+        /* Para espaçamento entre os blocos */
+    }
 
-        .stats-box {
-            width: 30%;
-            background-color: #f9f9f9;
-            padding: 20px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            border-radius: 10px;
-            text-align: center;
-            margin-bottom: 20px; /* Para espaçamento entre os blocos */
-        }
+    .stats-box {
+        width: 30%;
+        background-color: #f9f9f9;
+        padding: 10px;
+        box-shadow: 0 0 10px rgba(65,105,225);
+        border-radius: 20px;
+        text-align: center;
+        margin-bottom: 35px;
+        /* Para espaçamento entre os blocos */
+    }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-        }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+    }
 
-        table, th, td {
-            border: 1px solid #ddd;
-        }
+    table,
+    th,
+    td {
+        border: 1px solid #ddd;
+    }
 
-        th, td {
-            padding: 10px;
-            text-align: left;
-        }
+    th,
+    td {
+        text-align: left;
+        font-family: "Arial, Copperplate";
+    }
 
-        thead {
-            background-color: #f9f9f9;
-        }
+    h1 {
+        text-align: left;
+        font-family: "Serif, Georgia";
+        font-size: 22px;
+        margin-top: 35px;
+    }
 
-        tbody tr:nth-child(even) {
-            background-color: #f1f1f1;
-        }
+    h2 {
+        text-align: center;
+        font-family: "Serif, Georgia";
+        font-size: 25px;
+        margin-top: 35px;
+    }
+
+   h4 {
+        text-align: center;
+        font-family: "Serif, Georgia";
+        font-size: 40px;
+        margin-top: 35px;
+        margin-bottom: 5px;
+    }
+
+    thead {
+        background-color: darkblue;
+    }
+
+    tbody tr:nth-child(even) {
+        background-color: #f1f1f1;
+    }
     </style>
 </head>
+
 <body>
+    <center>
+    <h4 style="color:darkblue;">Painel COPED</h4>
+    </center>
+
     <div class="dashboard-container">
         <!-- Estatísticas -->
         <div class="stats-box">
-            <h3>Total de Turmas no Período Atual</h3>
-            <p>10</p>
+            <h2 style="color:coral;">Total de Turmas no Período Atual</h2>
+                <h4 style="color:crimson">10</h4>
         </div>
         <div class="stats-box">
-            <h3>Turmas Acompanhadas pelo Coordenador</h3>
-            <p>5</p>
+            <h2 style="color:coral;">Turmas Acompanhadas p/ Coordenador</h2>
+                <h4 style="color:crimson">5</h4>
         </div>
         <div class="stats-box">
-            <h3>Turmas do Dia</h3>
-            <p>20</p>
+            <h2 style="color:coral;">Turmas do Dia</h2>
+            <h4 style="color:crimson">20</h4>
+                <!-- <h1 style="color:darkblue">Matutino</h1>
+                <h1 style="color:darkblue">Vespertino</h1>
+                <h1 style="color:darkblue">Noturno</h1> -->
+                
         </div>
 
         <!-- Tabelas -->
         <div class="live-classes">
-            <h2>Turmas ao Vivo</h2>
+            <h2 style="color:darkblue;">Turmas ao Vivo</h2>
             <table>
                 <thead>
                     <tr>
-                        <th>Turma</th>
-                        <th>Curso</th>
-                        <th>Professor</th>
-                        <th>Sala</th>
-                        <th>Status</th>
+                        <th style="color:white;">Turma</th>
+                        <th style="color:white;">Curso</th>
+                        <th style="color:white;">Professor</th>
+                        <th style="color:white;">Sala</th>
+                        <th style="color:white;">Status</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -120,15 +149,15 @@ include_once "../head/menu.php";
         </div>
 
         <div class="coordinator-classes">
-            <h2>Turmas que o Coordenador Acompanha</h2>
+            <h2 style="color:darkblue;">Turmas que o Coordenador Acompanha</h2>
             <table>
                 <thead>
                     <tr>
-                    <th>Turma</th>
-                        <th>Curso</th>
-                        <th>Professor</th>
-                        <th>Sala</th>
-                        <th>Status</th>
+                        <th style="color:white;">Turma</th>
+                        <th style="color:white;">Curso</th>
+                        <th style="color:white;">Professor</th>
+                        <th style="color:white;">Sala</th>
+                        <th style="color:white;">Status</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -158,13 +187,13 @@ include_once "../head/menu.php";
         </div>
 
         <div class="coordinator-classes">
-            <h2>Salas em Uso e Andares</h2>
+            <h2 style="color:darkblue;">Salas em Uso e Andares</h2>
             <table>
                 <thead>
                     <tr>
-                        <th>Sala</th>
-                        <th>Andar</th>
-                        <th>Cursos</th>
+                        <th style="color:white;">Sala</th>
+                        <th style="color:white;">Andar</th>
+                        <th style="color:white;">Cursos</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -183,4 +212,5 @@ include_once "../head/menu.php";
         </div>
     </div>
 </body>
+
 </html>
