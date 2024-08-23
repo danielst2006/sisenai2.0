@@ -34,3 +34,7 @@ if (isset($_POST['login'])) {
         header("location: ../form/login.php");
     }
 }
+
+mysqli_close($conn)
+
+?>

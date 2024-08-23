@@ -296,4 +296,6 @@ function formatarData($data) {
     </script>
 </body>
 
+        <?php mysqli_close($conn)?>
+
 </html>

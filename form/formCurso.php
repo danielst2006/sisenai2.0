@@ -284,4 +284,6 @@ if ($result_cursos === false) {
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 </body>
 
+        <?php mysqli_close($conn)?>
+
 </html>

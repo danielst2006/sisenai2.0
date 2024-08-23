@@ -103,4 +103,6 @@ if ($action == 'insert') {
         exit();
     }
 }
+
+mysqli_close($conn)
 ?>

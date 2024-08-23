@@ -252,4 +252,6 @@ $resultado = mysqli_query($conn, $sql);
     </script>
 </body>
 
+        <?php mysqli_close($conn)?>
+
 </html>

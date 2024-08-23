@@ -312,4 +312,6 @@ $resultado = mysqli_query($conn, $sql);
     </div>
 </body>
 
+                            <?php mysqli_close($conn)?>
+
 </html>

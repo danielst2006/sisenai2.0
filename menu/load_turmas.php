@@ -43,3 +43,6 @@ if (!$consulta) {
     echo $xml->asXML();
 }
 exit;
+
+mysqli_close($conn)
+?>

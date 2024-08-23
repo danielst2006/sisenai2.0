@@ -215,4 +215,6 @@ include_once '../head/menu.php';
 
 </body>
 
+        <?php mysqli_close($conn)?>
+
 </html>

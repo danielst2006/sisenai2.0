@@ -49,6 +49,8 @@ $sql = "SELECT a.idAgendamento, a.data_inicio, a.data_final, u.nome_usuario,
            OR p.nome LIKE CONCAT('%', '$pesquisa', '%')";
 $resultado = mysqli_query($conn, $sql);
 
+
+
 ?>
 
 <!DOCTYPE html>
@@ -367,5 +369,7 @@ $resultado = mysqli_query($conn, $sql);
         }
     </script>
 </body>
+
+<?php mysqli_close($conn)?>
 
 </html>
