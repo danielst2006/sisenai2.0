@@ -1,6 +1,6 @@
 <?php
-// Inclui o arquivo de menu
-include_once '../head/menu.php';
+// Inclui o arquivo de menuIndex.php
+include_once '../head/menuIndex.php';
 ?>
 
 <!DOCTYPE html>
@@ -35,7 +35,7 @@ include_once '../head/menu.php';
                         if (alertBox) {
                             alertBox.style.display = 'none';
                         }
-                    }, 5000); // 5000 ms = 5 segundos
+                    }, 5000); 
                 </script>
 
                 <!-- Formulário de Login -->

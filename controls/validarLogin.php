@@ -22,7 +22,7 @@ if (isset($_POST['login'])) {
                 $_SESSION['login'] = $login;
                 $_SESSION['tipo_usuario'] = $linha['tipos'];
                 $_SESSION['id'] = $linha['idUsuario'];
-                header("location: ../form/menu.php");
+                header("location: ../index.php");
                 exit();
             } else {
                 header("location: ../form/login.php");
@@ -34,4 +34,3 @@ if (isset($_POST['login'])) {
         header("location: ../form/login.php");
     }
 }
-?>
