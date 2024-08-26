@@ -28,7 +28,7 @@ if($_SESSION['tipo_usuario'] == "ADM" || $_SESSION['tipo_usuario'] == "COPED") {
 
 } else {
 
-    include_once "head/menuIndex.php";
+    include_once "head/menu.php";
 }
 
 
