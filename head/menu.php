@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -11,17 +10,24 @@
     <link rel="stylesheet" href="/sisenai2.0/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <style>
+        .user-greeting {
+            text-align: center;
+            font-weight: bold;
+            flex: 1;
+        }
+    </style>
 </head>
 <body>
   <header>
-  <div class="navbar navbar-expand-md" style="background-color: rgb(218 224 233);">
-  <button class="openbtn" style="background-color: rgb(218 224 233);" onclick="openNav()">☰</button>
-  <p class="text-dark mx-auto my-auto">Olá, <?php echo $_SESSION['login']; ?></p>
-  <button class="openbtn-profile ms-auto" style="background-color: rgb(218 224 233);" onclick="openProfileNav()">
-    <img src="/sisenai2.0/imagens/senai.png" alt="Logo" class="logo">
-    <i class="fas fa-user"></i>
-  </button>
-</div>
+  <div class="navbar navbar-expand-md d-flex align-items-center" style="background-color: rgb(218 224 233);">
+      <button class="openbtn" style="background-color: rgb(218 224 233);" onclick="openNav()">☰</button>
+      <p class="user-greeting text-dark mx-auto my-auto">Olá, <?php echo isset($_SESSION['login']) ? $_SESSION['login'] : 'Usuário'; ?></p>
+      <button class="openbtn-profile ms-auto" style="background-color: rgb(218 224 233);" onclick="openProfileNav()">
+          <img src="/sisenai2.0/imagens/senai.png" alt="Logo" class="logo">
+          <i class="fas fa-user"></i>
+      </button>
+  </div>
 
     <div id="mySidebar" class="sidebar" style="background-color: rgb(231, 78, 22);">
       <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">×</a>
@@ -44,7 +50,7 @@
     <div id="profileSidebar" class="sidebar-profile" style="background-color: rgb(22, 65, 147);">
       <a href="javascript:void(0)" class="closebtn-profile" onclick="closeProfileNav()">×</a>
       <a href="../sisenai2.0/form/perfil.php">Perfil</a>
-      <a href="../controls/logout.php">Sair</a>
+      <a href="../sisenai2.0/controls/logout.php">Sair</a>
     </div>
     
 
