@@ -43,8 +43,8 @@
     
     <div id="profileSidebar" class="sidebar-profile" style="background-color: rgb(22, 65, 147);">
       <a href="javascript:void(0)" class="closebtn-profile" onclick="closeProfileNav()">×</a>
-      <a href="../sisenai2.0/form/perfil.php">Perfil</a>
-      <a href="../sisenai2.0/controls/logout.php">Sair</a>
+      <a href="/sisenai2.0/form/perfil.php">Perfil</a>
+      <a href="/sisenai2.0/controls/logout.php">Sair</a>
     </div>
     
 
