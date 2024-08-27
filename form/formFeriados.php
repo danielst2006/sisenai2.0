@@ -2,29 +2,26 @@
 
 session_start();
 if(isset($_SESSION['login'])){
-    if($_SESSION['tipo_usuario'] == "COPED" || $_SESSION['tipo_usuario'] == "ADM"){
-
-    } else {
+    if($_SESSION['tipo_usuario'] != "COPED" && $_SESSION['tipo_usuario'] != "ADM") {
         header('Location: ../form/menu.php');
+        exit();
     }
 } else {
     header('Location: ../form/login.php');
+    exit();
 }
 
 // Inclui o arquivo de menu
 include_once '../head/menu.php';
 include_once "../bd/conn.php";
 
-if (isset($_POST['busca'])) {
-    $pesquisa = $_POST['busca'];
-} else {
-    $pesquisa = '';
-}
+$pesquisa = isset($_POST['busca']) ? mysqli_real_escape_string($conn, $_POST['busca']) : '';
 
 // Paginação
-$pagina = (isset($_GET['pagina'])) ? $_GET['pagina'] : 1;
+$pagina = isset($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
+$pagina = $pagina > 0 ? $pagina : 1; // Garante que a página seja um número positivo
 $quantidade_pg = 5;
-$inicio = ($quantidade_pg * $pagina) - $quantidade_pg;
+$inicio = ($pagina - 1) * $quantidade_pg;
 
 // Consulta para contar o total de registros
 $result_curso = "SELECT COUNT(*) AS total FROM feriados WHERE nome LIKE '%$pesquisa%' OR dia_feriado LIKE '%$pesquisa%' OR tipo LIKE '%$pesquisa%'";
@@ -37,9 +34,16 @@ if ($consulta === false) {
 $total_curso = mysqli_fetch_assoc($consulta)['total'];
 $num_pagina = ceil($total_curso / $quantidade_pg);
 
-// Consulta para buscar os feriados
-$sql = "SELECT idFeriados, nome, dia_feriado, tipo FROM feriados WHERE nome LIKE CONCAT('%', '$pesquisa', '%') OR dia_feriado LIKE CONCAT('%', '$pesquisa', '%') OR tipo LIKE CONCAT('%', '$pesquisa', '%')";
+// Consulta para buscar os feriados com paginação
+$sql = "SELECT idFeriados, nome, dia_feriado, tipo 
+        FROM feriados 
+        WHERE nome LIKE '%$pesquisa%' OR dia_feriado LIKE '%$pesquisa%' OR tipo LIKE '%$pesquisa%'
+        LIMIT $inicio, $quantidade_pg";
 $resultado = mysqli_query($conn, $sql);
+
+if ($resultado === false) {
+    die("Error in SQL query: " . mysqli_error($conn));
+}
 ?>
 
 <!DOCTYPE html>
@@ -63,7 +67,7 @@ $resultado = mysqli_query($conn, $sql);
                     <div class="pesquisa">
                         <form action="formFeriados.php" method="post" class="mb-4">
                             <div class="input-group input-group-sm" style="max-width: 300px;">
-                                <input type="search" class="form-control" placeholder="Pesquisar" id="pesquisar" name="busca">
+                                <input type="search" class="form-control" placeholder="Pesquisar" id="pesquisar" name="busca" value="<?php echo htmlspecialchars($pesquisa); ?>">
                                 <div class="input-group-append">
                                     <button type="submit" class="btn btn-primary btn-sm">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
@@ -148,63 +152,63 @@ $resultado = mysqli_query($conn, $sql);
                         <nav aria-label="Page navigation">
                             <ul class="pagination justify-content-center">
                                 <li class="page-item <?php echo ($pagina <= 1) ? 'disabled' : ''; ?>">
-                                    <a class="page-link" href="<?php echo ($pagina > 1) ? 'formFeriados.php?pagina=' . ($pagina - 1) : '#'; ?>" aria-label="Previous">
+                                    <a class="page-link" href="<?php echo ($pagina > 1) ? 'formFeriados.php?pagina=' . ($pagina - 1) . '&busca=' . urlencode($pesquisa) : '#'; ?>" aria-label="Previous">
                                         <span aria-hidden="true">&laquo;</span>
                                     </a>
                                 </li>
                                 <?php for ($i = 1; $i <= $num_pagina; $i++) { ?>
-                                    <li class="page-item <?php echo ($pagina == $i) ? 'active' : ''; ?>"><a class="page-link" href="formFeriados.php?pagina=<?php echo $i; ?>"><?php echo $i; ?></a></li>
+                                    <li class="page-item <?php echo ($pagina == $i) ? 'active' : ''; ?>"><a class="page-link" href="formFeriados.php?pagina=<?php echo $i; ?>&busca=<?php echo urlencode($pesquisa); ?>"><?php echo $i; ?></a></li>
                                 <?php } ?>
                                 <li class="page-item <?php echo ($pagina >= $num_pagina) ? 'disabled' : ''; ?>">
-                                    <a class="page-link" href="<?php echo ($pagina < $num_pagina) ? 'formFeriados.php?pagina=' . ($pagina + 1) : '#'; ?>" aria-label="Next">
+                                    <a class="page-link" href="<?php echo ($pagina < $num_pagina) ? 'formFeriados.php?pagina=' . ($pagina + 1) . '&busca=' . urlencode($pesquisa) : '#'; ?>" aria-label="Next">
                                         <span aria-hidden="true">&raquo;</span>
                                     </a>
                                 </li>
                             </ul>
                         </nav>
-<!-- Modal para adicionar/editar feriados -->
-<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">Adicionar Novo Feriado</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
 
-            <div class="modal-body">
-                <form id="feriadosForm" action="../controls/cadastrarFeriados.php" method="POST">
-                    <input type="hidden" id="idFeriados" name="idFeriados">
-                    <input type="hidden" id="action" name="action" value="add">
+                        <!-- Modal para adicionar/editar feriados -->
+                        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="exampleModalLabel">Adicionar Novo Feriado</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
 
-                    <div class="mb-3">
-                        <label for="nome" class="form-label">Nome do Feriado</label>
-                        <input type="text" class="form-control" id="nome" name="nome" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="dia_feriado" class="form-label">Dia do Feriado</label>
-                        <input type="date" class="form-control" id="dia_feriado" name="dia_feriado" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="tipo" class="form-label">Tipo de Feriado</label>
-                        <select class="form-select" id="tipo" name="tipo" required>
-                            <option value="" disabled selected>Escolha o tipo de feriado</option>
-                            <option value="Municipal">Municipal</option>
-                            <option value="Estadual">Estadual</option>
-                            <option value="Nacional">Nacional</option>
-                            <option value="Ponto Facultativo">Ponto Facultativo</option>
-                            <option value="Interno">Interno</option>
-                        </select>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-                <button type="submit" class="btn btn-primary" onclick="submitForm()">Salvar</button>
-            </div>
-        </div>
-    </div>
-</div>
+                                    <div class="modal-body">
+                                        <form id="feriadosForm" action="../controls/cadastrarFeriados.php" method="POST">
+                                            <input type="hidden" id="idFeriados" name="idFeriados">
+                                            <input type="hidden" id="action" name="action" value="add">
 
+                                            <div class="mb-3">
+                                                <label for="nome" class="form-label">Nome do Feriado</label>
+                                                <input type="text" class="form-control" id="nome" name="nome" required>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="dia_feriado" class="form-label">Dia do Feriado</label>
+                                                <input type="date" class="form-control" id="dia_feriado" name="dia_feriado" required>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="tipo" class="form-label">Tipo de Feriado</label>
+                                                <select class="form-select" id="tipo" name="tipo" required>
+                                                    <option value="" disabled selected>Escolha o tipo de feriado</option>
+                                                    <option value="Municipal">Municipal</option>
+                                                    <option value="Estadual">Estadual</option>
+                                                    <option value="Nacional">Nacional</option>
+                                                    <option value="Ponto Facultativo">Ponto Facultativo</option>
+                                                    <option value="Interno">Interno</option>
+                                                </select>
+                                            </div>
+                                        </form>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                                        <button type="submit" class="btn btn-primary" onclick="submitForm()">Salvar</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
                     </div>
                 </div>
@@ -245,6 +249,6 @@ $resultado = mysqli_query($conn, $sql);
     </script>
 </body>
 
-        <?php mysqli_close($conn)?>
+<?php mysqli_close($conn) ?>
 
 </html>
