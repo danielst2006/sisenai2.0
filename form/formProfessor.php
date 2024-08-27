@@ -1,29 +1,26 @@
 <?php
-
 session_start();
-if(isset($_SESSION['login'])){
-    if($_SESSION['tipo_usuario'] == "COPED" || $_SESSION['tipo_usuario'] == "ADM"){
-
+if (isset($_SESSION['login'])) {
+    if ($_SESSION['tipo_usuario'] == "COPED" || $_SESSION['tipo_usuario'] == "ADM") {
+        // Permitir acesso
     } else {
         header('Location: ../form/menu.php');
+        exit();
     }
 } else {
     header('Location: ../form/login.php');
+    exit();
 }
 
 // Inclui o arquivo de menu
 include_once '../head/menu.php';
 include_once "../bd/conn.php";
 
-if (isset($_POST['busca'])) {
-    $pesquisa = $_POST['busca'];
-} else {
-    $pesquisa = '';
-}
+$pesquisa = isset($_POST['busca']) ? mysqli_real_escape_string($conn, $_POST['busca']) : '';
 
 // Paginação
-$pagina = (isset($_GET['pagina'])) ? $_GET['pagina'] : 1;
-$quantidade_pg = 5;
+$pagina = isset($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
+$quantidade_pg = 10;
 $inicio = ($quantidade_pg * $pagina) - $quantidade_pg;
 
 // Consulta para contar o total de registros
@@ -42,14 +39,15 @@ if ($consulta === false) {
 $total_professor = mysqli_fetch_assoc($consulta)['total'];
 $num_pagina = ceil($total_professor / $quantidade_pg);
 
-// Consulta para buscar os professores
+// Consulta para buscar os professores com paginação
 $sql = "SELECT p.idProfessor, p.nome, p.email, p.telefone, u.idUsuario, u.nome_usuario AS usuario, p.area, p.tipo_contrato 
         FROM professores p 
         JOIN usuarios u ON p.usuario_id = u.idUsuario 
-        WHERE p.nome LIKE CONCAT('%', '$pesquisa', '%') 
-           OR p.email LIKE CONCAT('%', '$pesquisa', '%') 
-           OR p.telefone LIKE CONCAT('%', '$pesquisa', '%') 
-           OR u.nome_usuario LIKE CONCAT('%', '$pesquisa', '%')";
+        WHERE p.nome LIKE '%$pesquisa%' 
+           OR p.email LIKE '%$pesquisa%' 
+           OR p.telefone LIKE '%$pesquisa%' 
+           OR u.nome_usuario LIKE '%$pesquisa%' 
+        LIMIT $inicio, $quantidade_pg";
 $resultado = mysqli_query($conn, $sql);
 
 ?>
@@ -73,9 +71,9 @@ $resultado = mysqli_query($conn, $sql);
                 <h1 class="text-center">Professores</h1>
                 <div style="overflow-x:auto;">
                     <div class="pesquisa">
-                        <form action="formProfessores.php" method="post" class="mb-4">
+                        <form action="formProfessor.php" method="post" class="mb-4">
                             <div class="input-group input-group-sm" style="max-width: 300px;">
-                                <input type="search" class="form-control" placeholder="Pesquisar" id="pesquisar" name="busca">
+                                <input type="search" class="form-control" placeholder="Pesquisar" id="pesquisar" name="busca" value="<?= htmlspecialchars($pesquisa); ?>">
                                 <div class="input-group-append">
                                     <button type="submit" class="btn btn-primary btn-sm">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
@@ -176,16 +174,16 @@ $resultado = mysqli_query($conn, $sql);
 
                         <nav aria-label="Page navigation">
                             <ul class="pagination justify-content-center">
-                                <li class="page-item <?php echo ($pagina <= 1) ? 'disabled' : ''; ?>">
-                                    <a class="page-link" href="<?php echo ($pagina > 1) ? 'formProfessor.php?pagina=' . ($pagina - 1) : '#'; ?>" aria-label="Previous">
+                                <li class="page-item <?= ($pagina <= 1) ? 'disabled' : ''; ?>">
+                                    <a class="page-link" href="<?= ($pagina > 1) ? 'formProfessor.php?pagina=' . ($pagina - 1) : '#'; ?>" aria-label="Previous">
                                         <span aria-hidden="true">&laquo;</span>
                                     </a>
                                 </li>
                                 <?php for ($i = 1; $i <= $num_pagina; $i++) { ?>
-                                    <li class="page-item <?php echo ($pagina == $i) ? 'active' : ''; ?>"><a class="page-link" href="formProfessor.php?pagina=<?php echo $i; ?>"><?php echo $i; ?></a></li>
+                                    <li class="page-item <?= ($pagina == $i) ? 'active' : ''; ?>"><a class="page-link" href="formProfessor.php?pagina=<?= $i; ?>"><?= $i; ?></a></li>
                                 <?php } ?>
-                                <li class="page-item <?php echo ($pagina >= $num_pagina) ? 'disabled' : ''; ?>">
-                                    <a class="page-link" href="<?php echo ($pagina < $num_pagina) ? 'formProfessor.php?pagina=' . ($pagina + 1) : '#'; ?>" aria-label="Next">
+                                <li class="page-item <?= ($pagina >= $num_pagina) ? 'disabled' : ''; ?>">
+                                    <a class="page-link" href="<?= ($pagina < $num_pagina) ? 'formProfessor.php?pagina=' . ($pagina + 1) : '#'; ?>" aria-label="Next">
                                         <span aria-hidden="true">&raquo;</span>
                                     </a>
                                 </li>
@@ -293,26 +291,26 @@ $resultado = mysqli_query($conn, $sql);
     <script>
         // Função para preencher o formulário no modal para edição
         function editProfessor(data) {
-    document.getElementById('idProfessor').value = data.idProfessor;
-    document.getElementById('nome').value = data.nome;
-    document.getElementById('email').value = data.email;
-    document.getElementById('telefone').value = data.telefone;
-    document.getElementById('area').value = data.area;
-    document.getElementById('tipo_contrato').value = data.tipo_contrato;
+            document.getElementById('idProfessor').value = data.idProfessor;
+            document.getElementById('nome').value = data.nome;
+            document.getElementById('email').value = data.email;
+            document.getElementById('telefone').value = data.telefone;
+            document.getElementById('area').value = data.area;
+            document.getElementById('tipo_contrato').value = data.tipo_contrato;
 
-    let usuarioSelect = document.getElementById('usuario_id');
+            let usuarioSelect = document.getElementById('usuario_id');
 
-    // Percorre as opções do select e define a que corresponde ao id do usuário
-    for (let i = 0; i < usuarioSelect.options.length; i++) {
-        if (usuarioSelect.options[i].value == data.idUsuario) {
-            usuarioSelect.selectedIndex = i;
-            break;
+            // Percorre as opções do select e define a que corresponde ao id do usuário
+            for (let i = 0; i < usuarioSelect.options.length; i++) {
+                if (usuarioSelect.options[i].value == data.idUsuario) {
+                    usuarioSelect.selectedIndex = i;
+                    break;
+                }
+            }
+
+            document.getElementById('action').value = 'update';
+            document.querySelector('.modal-title').textContent = 'Editar Professor';
         }
-    }
-
-    document.getElementById('action').value = 'update';
-    document.querySelector('.modal-title').textContent = 'Editar Professor';
-}
 
         // Função para limpar o formulário no modal para adicionar novos professores
         function clearForm() {
@@ -329,6 +327,6 @@ $resultado = mysqli_query($conn, $sql);
     </script>
 </body>
 
-        <?php mysqli_close($conn)?>
+<?php mysqli_close($conn); ?>
 
 </html>
