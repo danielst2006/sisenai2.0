@@ -38,3 +38,4 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 mysqli_close($conn)
 
 ?>
+//	turma_id	nome_turma	data_inicio	data_fim	horario_inicio	horario_final	status	curso_id

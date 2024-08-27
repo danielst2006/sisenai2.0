@@ -1,14 +1,15 @@
 <?php
-
 session_start();
 if(isset($_SESSION['login'])){
     if($_SESSION['tipo_usuario'] == "COPED" || $_SESSION['tipo_usuario'] == "ADM"){
 
     } else {
         header('Location: ../form/menu.php');
+        exit;
     }
 } else {
     header('Location: ../form/login.php');
+    exit;
 }
 
 // Inclui o arquivo de menu
@@ -22,31 +23,34 @@ if (isset($_POST['busca'])) {
 }
 
 // Paginação
-$pagina = (isset($_GET['pagina'])) ? $_GET['pagina'] : 1;
+$pagina = isset($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
 $quantidade_pg = 5;
 $inicio = ($quantidade_pg * $pagina) - $quantidade_pg;
 
 // Consulta para contar o total de registros
 $result_curso = "SELECT COUNT(*) AS total FROM cursos 
-                 WHERE nome_curso LIKE '%$pesquisa%' 
-                    OR area_tecnologica LIKE '%$pesquisa%' 
-                    OR ano LIKE '%$pesquisa%'";
-$consulta = mysqli_query($conn, $result_curso);
-
-if ($consulta === false) {
-    die("Erro na consulta: " . mysqli_error($conn));
-}
-
-$total_curso = mysqli_fetch_assoc($consulta)['total'];
+                 WHERE nome_curso LIKE ? 
+                    OR area_tecnologica LIKE ? 
+                    OR ano LIKE ?";
+$stmt = $conn->prepare($result_curso);
+$pesquisa_like = "%$pesquisa%";
+$stmt->bind_param('sss', $pesquisa_like, $pesquisa_like, $pesquisa_like);
+$stmt->execute();
+$consulta = $stmt->get_result();
+$total_curso = $consulta->fetch_assoc()['total'];
 $num_pagina = ceil($total_curso / $quantidade_pg);
 
-// Consulta para buscar os cursos
+// Consulta para buscar os cursos com limitação de registros
 $sql = "SELECT curso_id, nome_curso, area_tecnologica, ano 
 FROM cursos 
-WHERE nome_curso LIKE CONCAT('%', '$pesquisa', '%') 
-   OR area_tecnologica LIKE CONCAT('%', '$pesquisa', '%') 
-   OR ano LIKE CONCAT('%', '$pesquisa', '%')";
-$resultado = mysqli_query($conn, $sql);
+WHERE nome_curso LIKE ? 
+   OR area_tecnologica LIKE ? 
+   OR ano LIKE ? 
+LIMIT $inicio, $quantidade_pg";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param('sss', $pesquisa_like, $pesquisa_like, $pesquisa_like);
+$stmt->execute();
+$resultado = $stmt->get_result();
 
 // Consulta para buscar todos os cursos para o select
 $sql_cursos = "SELECT nome_curso FROM cursos ORDER BY nome_curso ASC";
@@ -76,7 +80,7 @@ if ($result_cursos === false) {
                 <h1 class="text-center">Cursos</h1>
                 <div style="overflow-x:auto;">
                     <div class="pesquisa">
-                        <form action="formCursos.php" method="post" class="mb-4">
+                        <form action="formCurso.php" method="post" class="mb-4">
                             <div class="input-group input-group-sm" style="max-width: 300px;">
                                 <input type="search" class="form-control" placeholder="Pesquisar" id="pesquisar" name="busca">
                                 <div class="input-group-append">
@@ -206,7 +210,9 @@ if ($result_cursos === false) {
                                             <div class="mb-3">
                                                 <label for="nome_curso" class="form-label">Nome do Curso</label>
                                                 <input type="text" class="form-control" id="nome_curso" name="nome_curso" required>
-                                                <div class="mb-3">
+                                            </div>
+
+                                            <div class="mb-3">
                                                 <label for="area_tecnologica" class="form-label">Área Tecnológica</label>
                                                 <select class="form-select" id="area_tecnologica" name="area_tecnologica" required>
                                                     <option value="">Selecione uma área</option>
@@ -232,19 +238,12 @@ if ($result_cursos === false) {
                                                     <option value="Gestão Ambiental">Gestão Ambiental</option>
                                                     <option value="Energia Renovável">Energia Renovável</option>
                                                 </select>
-                                           
                                             </div>
-
-                                         
 
                                             <div class="mb-3">
                                                 <label for="ano" class="form-label">Ano</label>
                                                 <input type="number" min="1900" max="2100" class="form-control" id="ano" name="ano" required>
                                             </div>
-                                           
-
-
-                                       
 
                                             <div class="modal-footer">
                                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
@@ -284,6 +283,6 @@ if ($result_cursos === false) {
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 </body>
 
-        <?php mysqli_close($conn)?>
+<?php mysqli_close($conn); ?>
 
 </html>

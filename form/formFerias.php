@@ -1,54 +1,52 @@
 <?php
 
 session_start();
-if(isset($_SESSION['login'])){
-    if($_SESSION['tipo_usuario'] == "COPED" || $_SESSION['tipo_usuario'] == "ADM"){
-
-    } else {
+if (isset($_SESSION['login'])) {
+    if ($_SESSION['tipo_usuario'] != "COPED" && $_SESSION['tipo_usuario'] != "ADM") {
         header('Location: ../form/menu.php');
+        exit;
     }
 } else {
     header('Location: ../form/login.php');
+    exit;
 }
 
 // Inclui o arquivo de menu
 include_once '../head/menu.php';
 include_once "../bd/conn.php";
 
-if (isset($_POST['busca'])) {
-    $pesquisa = $_POST['busca'];
-} else {
-    $pesquisa = '';
-}
+$pesquisa = isset($_POST['busca']) ? $_POST['busca'] : '';
 
 // Paginação
-$pagina = (isset($_GET['pagina'])) ? $_GET['pagina'] : 1;
+$pagina = isset($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
 $quantidade_pg = 5;
-$inicio = ($quantidade_pg * $pagina) - $quantidade_pg;
+$inicio = ($pagina - 1) * $quantidade_pg;
 
 // Consulta para contar o total de registros
-$result_curso = "SELECT COUNT(*) AS total FROM ferias f 
-                 JOIN tipo_ferias tf ON f.tipoFerias_id = tf.id_tipoferias 
-                 WHERE tf.tipo LIKE '%$pesquisa%'";
-$consulta = mysqli_query($conn, $result_curso);
-
-if ($consulta === false) {
-    die("Error in SQL query: " . mysqli_error($conn));
-}
-
-$total_curso = mysqli_fetch_assoc($consulta)['total'];
+$stmt = $conn->prepare("SELECT COUNT(*) AS total FROM ferias f 
+                         JOIN tipo_ferias tf ON f.tipoFerias_id = tf.id_tipoferias 
+                         WHERE tf.tipo LIKE ?");
+$pesquisaLike = "%$pesquisa%";
+$stmt->bind_param('s', $pesquisaLike);
+$stmt->execute();
+$result_curso = $stmt->get_result();
+$total_curso = $result_curso->fetch_assoc()['total'];
 $num_pagina = ceil($total_curso / $quantidade_pg);
 
 // Consulta para buscar as férias
-$sql = "SELECT f.idFerias, f.data_inicio, f.data_final, f.tipoFerias_id, tf.tipo 
-FROM ferias f 
-JOIN tipo_ferias tf ON f.tipoFerias_id = tf.id_tipoferias 
-WHERE f.idFerias LIKE CONCAT('%', '$pesquisa', '%') 
-   OR f.data_inicio LIKE CONCAT('%', '$pesquisa', '%') 
-   OR f.data_final LIKE CONCAT('%', '$pesquisa', '%') 
-   OR tf.tipo LIKE CONCAT('%', '$pesquisa', '%') 
-LIMIT $inicio, $quantidade_pg"; // Adicionando LIMIT para a paginação
-$resultado = mysqli_query($conn, $sql);
+$stmt = $conn->prepare("SELECT f.idFerias, f.data_inicio, f.data_final, f.tipoFerias_id, tf.tipo 
+                         FROM ferias f 
+                         JOIN tipo_ferias tf ON f.tipoFerias_id = tf.id_tipoferias 
+                         WHERE f.idFerias LIKE ? 
+                            OR f.data_inicio LIKE ? 
+                            OR f.data_final LIKE ? 
+                            OR tf.tipo LIKE ? 
+                         LIMIT ?, ?");
+$inicio = (int)$inicio;
+$quantidade_pg = (int)$quantidade_pg;
+$stmt->bind_param('ssssii', $pesquisaLike, $pesquisaLike, $pesquisaLike, $pesquisaLike, $inicio, $quantidade_pg);
+$stmt->execute();
+$resultado = $stmt->get_result();
 
 // Função para formatar a data para o formato brasileiro
 function formatarData($data) {
@@ -82,7 +80,7 @@ function formatarData($data) {
                     <div class="pesquisa">
                         <form action="formFerias.php" method="post" class="mb-4">
                             <div class="input-group input-group-sm" style="max-width: 300px;">
-                                <input type="search" class="form-control" placeholder="Pesquisar" id="pesquisar" name="busca">
+                                <input type="search" class="form-control" placeholder="Pesquisar" id="pesquisar" name="busca" value="<?= htmlspecialchars($pesquisa); ?>">
                                 <div class="input-group-append">
                                     <button type="submit" class="btn btn-primary btn-sm">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
@@ -96,7 +94,6 @@ function formatarData($data) {
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <div class="flex-grow-1">
                                 <?php
-                                // Exibe uma mensagem de sucesso ou erro com base no parâmetro de status na URL
                                 if (isset($_GET['status'])) {
                                     if ($_GET['status'] == 'success') {
                                         echo '<div id="alertBox" class="alert alert-success mb-0" style="display: inline-block" role="alert">Operação realizada com sucesso!</div>';
@@ -108,7 +105,6 @@ function formatarData($data) {
                             </div>
 
                             <script>
-                                // Esconde a mensagem de alerta após 5 segundos
                                 setTimeout(function() {
                                     var alertBox = document.getElementById('alertBox');
                                     if (alertBox) {
@@ -117,17 +113,12 @@ function formatarData($data) {
                                 }, 5000); // 5000 ms = 5 segundos
                             </script>
 
-
                             <div>
-                                <!-- Botão para abrir o modal de adição de novas férias -->
                                 <button class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#exampleModal" onclick="clearForm()">Adicionar Nova Férias</button>
-                                
-                                <!-- Botão Tipo de Férias -->
                                 <a href="formTipoFerias.php" class="btn btn-secondary">Tipo de Férias</a>
                             </div>
                         </div>
 
-                        <!-- Tabela de férias -->
                         <table class='table rounded-table'>
                             <thead>
                                 <tr>
@@ -140,7 +131,6 @@ function formatarData($data) {
                             </thead>
                             <tbody>
                                 <?php
-                                // Verifica se há férias e exibe cada uma em uma linha da tabela
                                 if (mysqli_num_rows($resultado) > 0) {
                                     while ($row = mysqli_fetch_assoc($resultado)) {
                                 ?>
@@ -151,15 +141,10 @@ function formatarData($data) {
                                             <td class='text-center'><?= htmlspecialchars($row['tipo']); ?></td>
                                             <td class='text-center'>
                                                 <div class='d-flex justify-content-center'>
-                                                    <!-- Botão de edição -->
                                                     <button class='btn action-button edit-button me-2' data-bs-toggle='modal' data-bs-target='#exampleModal' onclick='editFerias(<?= json_encode($row); ?>)'><i class='fas fa-pencil-alt'></i></button>
-
-                                                    <!-- Formulário de exclusão -->
                                                     <form action='../controls/cadastrarFerias.php' method='POST' style='display:inline-block;'>
                                                         <input type='hidden' name='idFerias' value='<?= htmlspecialchars($row['idFerias']); ?>'>
                                                         <input type='hidden' name='action' value='delete'>
-
-                                                        <!-- Botão de exclusão com confirmação -->
                                                         <button type='submit' class='btn action-button delete-button' onclick='return confirm("Tem certeza que deseja excluir estas férias?")'><i class='fas fa-times'></i></button>
                                                     </form>
                                                 </div>
@@ -169,7 +154,6 @@ function formatarData($data) {
                                     }
                                 } else {
                                     ?>
-                                    <!-- Mensagem quando não há férias -->
                                     <tr>
                                         <td colspan='5'>Nenhuma férias encontrada</td>
                                     </tr>
@@ -181,23 +165,22 @@ function formatarData($data) {
 
                         <nav aria-label="Page navigation">
                             <ul class="pagination justify-content-center">
-                                <li class="page-item <?php echo ($pagina <= 1) ? 'disabled' : ''; ?>">
-                                    <a class="page-link" href="<?php echo ($pagina > 1) ? 'formFerias.php?pagina=' . ($pagina - 1) : '#'; ?>" aria-label="Previous">
+                                <li class="page-item <?= ($pagina <= 1) ? 'disabled' : ''; ?>">
+                                    <a class="page-link" href="<?= ($pagina > 1) ? 'formFerias.php?pagina=' . ($pagina - 1) : '#'; ?>" aria-label="Previous">
                                         <span aria-hidden="true">&laquo;</span>
                                     </a>
                                 </li>
                                 <?php for ($i = 1; $i <= $num_pagina; $i++) { ?>
-                                    <li class="page-item <?php echo ($pagina == $i) ? 'active' : ''; ?>"><a class="page-link" href="formFerias.php?pagina=<?php echo $i; ?>"><?php echo $i; ?></a></li>
+                                    <li class="page-item <?= ($pagina == $i) ? 'active' : ''; ?>"><a class="page-link" href="formFerias.php?pagina=<?= $i; ?>"><?= $i; ?></a></li>
                                 <?php } ?>
-                                <li class="page-item <?php echo ($pagina >= $num_pagina) ? 'disabled' : ''; ?>">
-                                    <a class="page-link" href="<?php echo ($pagina < $num_pagina) ? 'formFerias.php?pagina=' . ($pagina + 1) : '#'; ?>" aria-label="Next">
+                                <li class="page-item <?= ($pagina >= $num_pagina) ? 'disabled' : ''; ?>">
+                                    <a class="page-link" href="<?= ($pagina < $num_pagina) ? 'formFerias.php?pagina=' . ($pagina + 1) : '#'; ?>" aria-label="Next">
                                         <span aria-hidden="true">&raquo;</span>
                                     </a>
                                 </li>
                             </ul>
                         </nav>
 
-                        <!-- Modal para adicionar/editar férias -->
                         <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                             <div class="modal-dialog">
                                 <div class="modal-content">
@@ -228,7 +211,7 @@ function formatarData($data) {
                                                     if (dataInicio && dataFinal) {
                                                         if (dataInicio > dataFinal) {
                                                             alert('A data de início não pode ser posterior à data de fim.');
-                                                            this.value = ''; // Limpa a data de fim se a condição for inválida
+                                                            this.value = '';
                                                         }
                                                     }
                                                 });
@@ -237,12 +220,11 @@ function formatarData($data) {
                                                 <label for="tipoFerias" class="form-label">Tipo de Férias</label>
                                                 <select class="form-select" id="tipoFerias" name="tipoFerias_id" required>
                                                     <?php
-                                                    // Consulta para listar tipos de férias
                                                     $query = "SELECT id_tipoferias, tipo FROM tipo_ferias";
-                                                    $result = mysqli_query($conn, $query);
+                                                    $result = $conn->query($query);
 
                                                     if ($result) {
-                                                        while ($row = mysqli_fetch_assoc($result)) {
+                                                        while ($row = $result->fetch_assoc()) {
                                                             echo "<option value='{$row['id_tipoferias']}'>{$row['tipo']}</option>";
                                                         }
                                                     } else {
@@ -255,7 +237,7 @@ function formatarData($data) {
                                     </div>
                                     <div class="modal-footer">
                                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-                                        <button type="submit" class="btn btn-primary" onclick="submitForm()">Salvar</button>
+                                        <button type="button" class="btn btn-primary" onclick="submitForm()">Salvar</button>
                                     </div>
                                 </div>
                             </div>
@@ -267,11 +249,9 @@ function formatarData($data) {
         </div>
     </div>
 
-    <!-- Bootstrap JS and dependencies -->
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/js/bootstrap.min.js"></script>
     <script>
-        // Função para preencher o formulário no modal para edição
         function editFerias(data) {
             document.getElementById('idFerias').value = data.idFerias;
             document.getElementById('data_inicio').value = data.data_inicio;
@@ -281,7 +261,6 @@ function formatarData($data) {
             document.querySelector('.modal-title').textContent = 'Editar Férias';
         }
 
-        // Função para limpar o formulário no modal para adicionar novas férias
         function clearForm() {
             document.getElementById('feriasForm').reset();
             document.getElementById('idFerias').value = '';
@@ -289,13 +268,12 @@ function formatarData($data) {
             document.querySelector('.modal-title').textContent = 'Adicionar Nova Férias';
         }
 
-        // Função para submeter o formulário
         function submitForm() {
             document.getElementById('feriasForm').submit();
         }
     </script>
 </body>
 
-        <?php mysqli_close($conn)?>
+<?php $conn->close(); ?>
 
 </html>

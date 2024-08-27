@@ -22,8 +22,8 @@ if (isset($_POST['busca'])) {
 }
 
 // Paginação
-$pagina = (isset($_GET['pagina'])) ? $_GET['pagina'] : 1;
-$quantidade_pg = 5;
+$pagina = isset($_GET['pagina']) ? $_GET['pagina'] : 1;
+$quantidade_pg = 10;
 $inicio = ($quantidade_pg * $pagina) - $quantidade_pg;
 
 // Consulta para contar o total de registros
@@ -37,12 +37,14 @@ if ($consulta === false) {
 $total_usuario = mysqli_fetch_assoc($consulta)['total'];
 $num_pagina = ceil($total_usuario / $quantidade_pg);
 
-// Consulta para buscar os tipos de usuários
+// Consulta para buscar os tipos de usuários com limite e offset para a paginação
 $sql = "SELECT idTipo_usuario, tipo 
-FROM tipo_usuario 
-WHERE idTipo_usuario LIKE CONCAT('%', '$pesquisa', '%') 
-   OR tipo LIKE CONCAT('%', '$pesquisa', '%')";
+        FROM tipo_usuario 
+        WHERE idTipo_usuario LIKE CONCAT('%', '$pesquisa', '%') 
+           OR tipo LIKE CONCAT('%', '$pesquisa', '%') 
+        LIMIT $inicio, $quantidade_pg";
 $resultado = mysqli_query($conn, $sql);
+
 
 ?>
 

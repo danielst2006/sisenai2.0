@@ -1,44 +1,44 @@
 <?php
 
 session_start();
-if(isset($_SESSION['login'])){
-    if($_SESSION['tipo_usuario'] == "COPED" || $_SESSION['tipo_usuario'] == "ADM"){
-
+if (isset($_SESSION['login'])) {
+    if ($_SESSION['tipo_usuario'] == "COPED" || $_SESSION['tipo_usuario'] == "ADM") {
+        // Usuário autenticado e autorizado
     } else {
         header('Location: ../form/menu.php');
+        exit();
     }
 } else {
     header('Location: ../form/login.php');
+    exit();
 }
+
 // Inclui o arquivo de menu
 include_once '../head/menu.php';
 include_once "../bd/conn.php";
 
-if (isset($_POST['busca'])) {
-    $pesquisa = $_POST['busca'];
-} else {
-    $pesquisa = '';
-}
+// Inicializa variáveis
+$pesquisa = isset($_POST['busca']) ? $_POST['busca'] : '';
 
 // Paginação
-$pagina = (isset($_GET['pagina'])) ? $_GET['pagina'] : 1;
+$pagina = isset($_GET['pagina']) ? intval($_GET['pagina']) : 1;
 $quantidade_pg = 5;
 $inicio = ($quantidade_pg * $pagina) - $quantidade_pg;
 
-// Consulta para contar o total de registros
-$result_tipo = "SELECT COUNT(*) AS total FROM tipo_ferias WHERE tipo LIKE '%$pesquisa%'";
-$consulta = mysqli_query($conn, $result_tipo);
-
-if ($consulta === false) {
-    die("Error in SQL query: " . mysqli_error($conn));
-}
-
-$total_tipo = mysqli_fetch_assoc($consulta)['total'];
+// Prepara e executa consulta para contar o total de registros
+$stmt = $conn->prepare("SELECT COUNT(*) AS total FROM tipo_ferias WHERE tipo LIKE ?");
+$search_param = "%$pesquisa%";
+$stmt->bind_param("s", $search_param);
+$stmt->execute();
+$result = $stmt->get_result();
+$total_tipo = $result->fetch_assoc()['total'];
 $num_pagina = ceil($total_tipo / $quantidade_pg);
 
-// Consulta para buscar os tipos de férias
-$sql = "SELECT id_tipoferias, tipo FROM tipo_ferias WHERE tipo LIKE CONCAT('%', '$pesquisa', '%') LIMIT $inicio, $quantidade_pg";
-$resultado = mysqli_query($conn, $sql);
+// Prepara e executa consulta para buscar os tipos de férias
+$stmt = $conn->prepare("SELECT id_tipoferias, tipo FROM tipo_ferias WHERE tipo LIKE ? LIMIT ?, ?");
+$stmt->bind_param("sii", $search_param, $inicio, $quantidade_pg);
+$stmt->execute();
+$resultado = $stmt->get_result();
 
 ?>
 
@@ -63,7 +63,7 @@ $resultado = mysqli_query($conn, $sql);
                     <div class="pesquisa">
                         <form action="formTipoFerias.php" method="post" class="mb-4">
                             <div class="input-group input-group-sm" style="max-width: 300px;">
-                                <input type="search" class="form-control" placeholder="Pesquisar" id="pesquisar" name="busca">
+                                <input type="search" class="form-control" placeholder="Pesquisar" id="pesquisar" name="busca" value="<?= htmlspecialchars($pesquisa); ?>">
                                 <div class="input-group-append">
                                     <button type="submit" class="btn btn-primary btn-sm">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
@@ -75,9 +75,8 @@ $resultado = mysqli_query($conn, $sql);
                         </form>
 
                         <div class="d-flex justify-content-between align-items-center mb-3">
-                        <div class="flex-grow-1">
+                            <div class="flex-grow-1">
                                 <?php
-                                // Exibe uma mensagem de sucesso ou erro com base no parâmetro de status na URL
                                 if (isset($_GET['status'])) {
                                     if ($_GET['status'] == 'success') {
                                         echo '<div id="alertBox" class="alert alert-success mb-0" style="display: inline-block" role="alert">Operação realizada com sucesso!</div>';
@@ -89,26 +88,20 @@ $resultado = mysqli_query($conn, $sql);
                             </div>
 
                             <script>
-                                // Esconde a mensagem de alerta após 5 segundos
                                 setTimeout(function() {
                                     var alertBox = document.getElementById('alertBox');
                                     if (alertBox) {
                                         alertBox.style.display = 'none';
                                     }
-                                }, 5000); // 5000 ms = 5 segundos
+                                }, 5000);
                             </script>
 
-
                             <div>
-                                <!-- Botão para abrir o modal de adição de novos tipos de férias -->
                                 <button class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#exampleModal" onclick="clearForm()">Adicionar Novo Tipo</button>
-                                
-                                <!-- Botão para o formulário de férias -->
                                 <a href="formFerias.php" class="btn btn-secondary">Férias</a>
                             </div>
                         </div>
 
-                        <!-- Tabela de tipos de férias -->
                         <table class='table rounded-table'>
                             <thead>
                                 <tr>
@@ -119,24 +112,18 @@ $resultado = mysqli_query($conn, $sql);
                             </thead>
                             <tbody>
                                 <?php
-                                // Verifica se há tipos de férias e exibe cada um em uma linha da tabela
-                                if (mysqli_num_rows($resultado) > 0) {
-                                    while ($row = mysqli_fetch_assoc($resultado)) {
+                                if ($resultado->num_rows > 0) {
+                                    while ($row = $resultado->fetch_assoc()) {
                                 ?>
                                         <tr>
                                             <td class='text-center'><?= htmlspecialchars($row['id_tipoferias']); ?></td>
                                             <td class='text-center'><?= htmlspecialchars($row['tipo']); ?></td>
                                             <td class='text-center'>
                                                 <div class='d-flex justify-content-center'>
-                                                    <!-- Botão de edição -->
                                                     <button class='btn action-button edit-button me-2' data-bs-toggle='modal' data-bs-target='#exampleModal' onclick='editTipo(<?= json_encode($row); ?>)'><i class='fas fa-pencil-alt'></i></button>
-
-                                                    <!-- Formulário de exclusão -->
                                                     <form action='../controls/cadastrarTipoFerias.php' method='POST' style='display:inline-block;'>
                                                         <input type='hidden' name='id_tipoferias' value='<?= htmlspecialchars($row['id_tipoferias']); ?>'>
                                                         <input type='hidden' name='action' value='delete'>
-
-                                                        <!-- Botão de exclusão com confirmação -->
                                                         <button type='submit' class='btn action-button delete-button' onclick='return confirm("Tem certeza que deseja excluir este tipo de férias?")'><i class='fas fa-times'></i></button>
                                                     </form>
                                                 </div>
@@ -146,7 +133,6 @@ $resultado = mysqli_query($conn, $sql);
                                     }
                                 } else {
                                     ?>
-                                    <!-- Mensagem quando não há tipos de férias -->
                                     <tr>
                                         <td colspan='3'>Nenhum tipo de férias encontrado</td>
                                     </tr>
@@ -158,23 +144,22 @@ $resultado = mysqli_query($conn, $sql);
 
                         <nav aria-label="Page navigation">
                             <ul class="pagination justify-content-center">
-                                <li class="page-item <?php echo ($pagina <= 1) ? 'disabled' : ''; ?>">
-                                    <a class="page-link" href="<?php echo ($pagina > 1) ? 'formTipoFerias.php?pagina=' . ($pagina - 1) : '#'; ?>" aria-label="Previous">
+                                <li class="page-item <?= $pagina <= 1 ? 'disabled' : ''; ?>">
+                                    <a class="page-link" href="<?= $pagina > 1 ? 'formTipoFerias.php?pagina=' . ($pagina - 1) : '#'; ?>" aria-label="Previous">
                                         <span aria-hidden="true">&laquo;</span>
                                     </a>
                                 </li>
                                 <?php for ($i = 1; $i <= $num_pagina; $i++) { ?>
-                                    <li class="page-item <?php echo ($pagina == $i) ? 'active' : ''; ?>"><a class="page-link" href="formTipoFerias.php?pagina=<?php echo $i; ?>"><?php echo $i; ?></a></li>
+                                    <li class="page-item <?= $pagina == $i ? 'active' : ''; ?>"><a class="page-link" href="formTipoFerias.php?pagina=<?= $i; ?>"><?= $i; ?></a></li>
                                 <?php } ?>
-                                <li class="page-item <?php echo ($pagina >= $num_pagina) ? 'disabled' : ''; ?>">
-                                    <a class="page-link" href="<?php echo ($pagina < $num_pagina) ? 'formTipoFerias.php?pagina=' . ($pagina + 1) : '#'; ?>" aria-label="Next">
+                                <li class="page-item <?= $pagina >= $num_pagina ? 'disabled' : ''; ?>">
+                                    <a class="page-link" href="<?= $pagina < $num_pagina ? 'formTipoFerias.php?pagina=' . ($pagina + 1) : '#'; ?>" aria-label="Next">
                                         <span aria-hidden="true">&raquo;</span>
                                     </a>
                                 </li>
                             </ul>
                         </nav>
 
-                        <!-- Modal para adicionar/editar tipo de férias -->
                         <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                             <div class="modal-dialog">
                                 <div class="modal-content">
@@ -182,12 +167,10 @@ $resultado = mysqli_query($conn, $sql);
                                         <h5 class="modal-title" id="exampleModalLabel">Adicionar Novo Tipo de Férias</h5>
                                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                     </div>
-
                                     <div class="modal-body">
                                         <form id="tipoFeriasForm" action="../controls/cadastrarTipoFerias.php" method="POST">
                                             <input type="hidden" id="id_tipoferias" name="id_tipoferias">
                                             <input type="hidden" id="action" name="action" value="add">
-
                                             <div class="mb-3">
                                                 <label for="tipo" class="form-label">Tipo de Férias</label>
                                                 <input type="text" class="form-control" id="tipo" name="tipo" required>
@@ -196,7 +179,7 @@ $resultado = mysqli_query($conn, $sql);
                                     </div>
                                     <div class="modal-footer">
                                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-                                        <button type="submit" class="btn btn-primary" onclick="submitForm()">Salvar</button>
+                                        <button type="button" class="btn btn-primary" onclick="submitForm()">Salvar</button>
                                     </div>
                                 </div>
                             </div>
@@ -212,7 +195,6 @@ $resultado = mysqli_query($conn, $sql);
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/js/bootstrap.min.js"></script>
     <script>
-        // Função para preencher o formulário no modal para edição
         function editTipo(data) {
             document.getElementById('id_tipoferias').value = data.id_tipoferias;
             document.getElementById('tipo').value = data.tipo;
@@ -220,7 +202,6 @@ $resultado = mysqli_query($conn, $sql);
             document.querySelector('.modal-title').textContent = 'Editar Tipo de Férias';
         }
 
-        // Função para limpar o formulário no modal para adicionar novos tipos
         function clearForm() {
             document.getElementById('tipoFeriasForm').reset();
             document.getElementById('id_tipoferias').value = '';
@@ -228,14 +209,12 @@ $resultado = mysqli_query($conn, $sql);
             document.querySelector('.modal-title').textContent = 'Adicionar Novo Tipo de Férias';
         }
 
-        // Função para submeter o formulário
         function submitForm() {
             document.getElementById('tipoFeriasForm').submit();
         }
     </script>
 </body>
 
-        <?php mysqli_close($conn)?>
+<?php mysqli_close($conn); ?>
 
 </html>
-
