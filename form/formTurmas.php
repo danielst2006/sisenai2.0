@@ -1,25 +1,43 @@
 <?php
+
 session_start();
 
-if (isset($_SESSION['login'])) {
-    if ($_SESSION['tipo_usuario'] == "COPED" || $_SESSION['tipo_usuario'] == "ADM") {
+if(isset($_SESSION['login'])){
+    if($_SESSION['tipo_usuario'] == "COPED" || $_SESSION['tipo_usuario'] == "ADM"){
+
     } else {
         header('Location: ../form/menu.php');
-        exit;
     }
 } else {
     header('Location: ../form/login.php');
-    exit;
 }
 
 // Inclui o arquivo de menu
 include_once '../head/menu.php';
 include_once "../bd/conn.php";
 
-// Escapa a entrada de pesquisa
-$pesquisa = isset($_POST['busca']) ? mysqli_real_escape_string($conn, $_POST['busca']) : '';
+if (isset($_POST['busca'])) {
+    $pesquisa = $_POST['busca'];
+} else {
+    $pesquisa = '';
+}
 
 // Paginação
+$pagina = (isset($_GET['pagina'])) ? $_GET['pagina'] : 1;
+$quantidade_pg = 10;
+$inicio = ($quantidade_pg * $pagina) - $quantidade_pg;
+
+// Consulta para contar o total de registros
+$result_turma = "SELECT COUNT(*) AS total FROM turmas t 
+                 JOIN cursos c ON t.curso_id = c.curso_id 
+                 WHERE t.nome_turma LIKE '%$pesquisa%' 
+                    OR c.nome_curso LIKE '%$pesquisa%'";
+$consulta = mysqli_query($conn, $result_turma);
+
+if ($consulta === false) {
+    die("Error in SQL query: " . mysqli_error($conn));
+}
+   
 $pagina = isset($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
 $quantidade_pg = 10; // Ajuste a quantidade de registros por página conforme necessário
 $inicio = ($quantidade_pg * $pagina) - $quantidade_pg;
@@ -37,20 +55,19 @@ $result = mysqli_stmt_get_result($stmt);
 $total_turma = mysqli_fetch_assoc($result)['total'];
 $num_pagina = ceil($total_turma / $quantidade_pg);
 
+
+
+
 // Consulta para buscar as turmas
 $sql = "SELECT t.turma_id, t.nome_turma, t.data_inicio, t.data_fim, t.horario_inicio, t.horario_final, t.status, c.nome_curso 
-        FROM turmas t 
-        JOIN cursos c ON t.curso_id = c.curso_id 
-        WHERE t.turma_id LIKE ? 
-           OR t.nome_turma LIKE ? 
-           OR t.data_inicio LIKE ? 
-           OR t.data_fim LIKE ? 
-           OR c.nome_curso LIKE ? 
-        LIMIT ?, ?";
-$stmt = mysqli_prepare($conn, $sql);
-mysqli_stmt_bind_param($stmt, 'ssssssi', $search_param, $search_param, $search_param, $search_param, $search_param, $inicio, $quantidade_pg);
-mysqli_stmt_execute($stmt);
-$resultado = mysqli_stmt_get_result($stmt);
+FROM turmas t 
+JOIN cursos c ON t.curso_id = c.curso_id 
+WHERE t.turma_id LIKE CONCAT('%', '$pesquisa', '%') 
+   OR t.nome_turma LIKE CONCAT('%', '$pesquisa', '%') 
+   OR t.data_inicio LIKE CONCAT('%', '$pesquisa', '%') 
+   OR t.data_fim LIKE CONCAT('%', '$pesquisa', '%') 
+   OR c.nome_curso LIKE CONCAT('%', '$pesquisa', '%')";
+$resultado = mysqli_query($conn, $sql);
 
 ?>
 
@@ -158,16 +175,22 @@ $resultado = mysqli_stmt_get_result($stmt);
                                                     <form action='../controls/cadastrarTurmas.php' method='POST' style='display:inline-block;'>
                                                         <input type='hidden' name='turma_id' value='<?= htmlspecialchars($row['turma_id']); ?>'>
                                                         <input type='hidden' name='action' value='delete'>
+
                                                         <!-- Botão de exclusão com confirmação -->
-                                                        <button type='submit' class='btn action-button delete-button' onclick='return confirm("Tem certeza que deseja excluir esta turma?");'><i class='fas fa-trash'></i></button>
+                                                        <button type='submit' class='btn action-button delete-button' onclick='return confirm("Tem certeza que deseja excluir esta turma?")'><i class='fas fa-times'></i></button>
                                                     </form>
                                                 </div>
                                             </td>
                                         </tr>
-                                <?php
+                                    <?php
                                     }
                                 } else {
-                                    echo "<tr><td colspan='9' class='text-center'>Nenhuma turma encontrada.</td></tr>";
+                                    ?>
+                                    <!-- Mensagem quando não há turmas -->
+                                    <tr>
+                                        <td colspan='10'>Nenhuma turma encontrada</td>
+                                    </tr>
+                                <?php
                                 }
                                 ?>
                             </tbody>
@@ -191,110 +214,161 @@ $resultado = mysqli_stmt_get_result($stmt);
                             </ul>
                         </nav>
 
+                        <!-- Modal para adicionar/editar turmas -->
+                        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="exampleModalLabel">Adicionar Nova Turma</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+
+                                    <div class="modal-body">
+                                        <form id="turmaForm" action="../controls/cadastrarTurmas.php" method="POST">
+                                            <input type="hidden" id="turma_id" name="turma_id">
+                                            <input type="hidden" id="action" name="action" value="add">
+
+                                            <div class="mb-3">
+                                                <label for="nome_turma" class="form-label">Nome da Turma</label>
+                                                <input type="text" class="form-control" id="nome_turma" name="nome_turma" required>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="data_inicio" class="form-label">Data Início</label>
+                                                <input type="date" class="form-control" id="data_inicio" name="data_inicio" required>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="data_fim" class="form-label">Data Fim</label>
+                                                <input type="date" class="form-control" id="data_fim" name="data_fim" required>
+                                            </div>
+
+                                            <script>
+                                                function validarDatas() {
+                                                    var dataInicio = document.getElementById('data_inicio').value;
+                                                    var dataFim = document.getElementById('data_fim').value;
+
+                                                    if (dataInicio && dataFim) {
+                                                        if (new Date(dataInicio) > new Date(dataFim)) {
+                                                            alert('A data de início não pode ser posterior à data de fim.');
+                                                            document.getElementById('data_fim').value = ''; // Limpa o campo de data fim se for inválido
+                                                        }
+                                                    }
+                                                }
+
+                                                document.getElementById('data_fim').addEventListener('change', validarDatas);
+                                            </script>
+
+                                            <div class="mb-3">
+                                                <label for="horario_inicio" class="form-label">Horário Início</label>
+                                                <input type="time" class="form-control" id="horario_inicio" name="horario_inicio" required>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="horario_final" class="form-label">Horário Final</label>
+                                                <input type="time" class="form-control" id="horario_final" name="horario_final" required>
+                                            </div>
+
+                                            <script>
+                                                function validarHorarios() {
+                                                    var horarioInicio = document.getElementById('horario_inicio').value;
+                                                    var horarioFim = document.getElementById('horario_final').value;
+
+                                                    if (horarioInicio && horarioFim) {
+                                                        if (horarioInicio > horarioFim) {
+                                                            alert('O horário de início não pode ser posterior ao horário de fim.');
+                                                            document.getElementById('horario_final').value = ''; // Limpa o campo de horário final se for inválido
+                                                        }
+                                                    }
+                                                }
+
+                                                document.getElementById('horario_final').addEventListener('change', validarHorarios);
+                                            </script>
+
+                                            <div class="mb-3">
+                                                <label for="status" class="form-label">Status</label>
+                                                <select class="form-select" id="status" name="status" required>
+                                                    <option value="ATIVA">Ativa</option>
+                                                    <option value="CANCELADA">Cancelada</option>
+                                                    <option value="INATIVA">Inativa</option>
+                                                </select>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="curso_id" class="form-label">Curso</label>
+                                                <select class="form-select" id="curso_id" name="curso_id" required>
+                                                    <?php
+                                                    // Consulta para listar cursos
+                                                    $query = "SELECT curso_id, nome_curso FROM cursos";
+                                                    $result = mysqli_query($conn, $query);
+
+                                                    if ($result) {
+                                                        while ($row = mysqli_fetch_assoc($result)) {
+                                                            echo "<option value='{$row['curso_id']}'>{$row['nome_curso']}</option>";
+                                                        }
+                                                    } else {
+                                                        echo "<option value=''>Nenhum curso disponível</option>";
+                                                    }
+                                                    ?>
+                                                </select>
+                                            </div>
+                                        </form>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                                        <button type="submit" class="btn btn-primary" onclick="submitForm()">Salvar</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Modal -->
-    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Cadastrar Turma</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="turmaForm" action="../controls/cadastrarTurmas.php" method="POST">
-                        <input type="hidden" name="turma_id" id="turma_id">
-                        <input type="hidden" name="action" id="action" value="add">
-                        <div class="mb-3">
-                            <label for="nome_turma" class="form-label">Nome da Turma</label>
-                            <input type="text" class="form-control" id="nome_turma" name="nome_turma" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="data_inicio" class="form-label">Data Início</label>
-                            <input type="date" class="form-control" id="data_inicio" name="data_inicio" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="data_fim" class="form-label">Data Fim</label>
-                            <input type="date" class="form-control" id="data_fim" name="data_fim" required>
-                        </div>
-
-                        <script>
-                            document.getElementById('data_fim').addEventListener('change', function() {
-                                var dataInicio = document.getElementById('data_inicio').value;
-                                var dataFinal = this.value;
-
-                                if (dataInicio && dataFinal) {
-                                    if (dataInicio > dataFinal) {
-                                        alert('A data de início não pode ser posterior à data de fim.');
-                                        this.value = ''; // Limpa a data de fim se a condição for inválida
-                                    }
-                                }
-                            });
-                        </script>
-                        <div class="mb-3">
-                            <label for="horario_inicio" class="form-label">Horário Início</label>
-                            <input type="time" class="form-control" id="horario_inicio" name="horario_inicio" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="horario_final" class="form-label">Horário Final</label>
-                            <input type="time" class="form-control" id="horario_final" name="horario_final" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="status" class="form-label">Status</label>
-                            <select class="form-select" id="status" name="status" required>
-                                <option value="Ativo">Ativo</option>
-                                <option value="Inativo">Inativo</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label for="curso_id" class="form-label">Curso</label>
-                            <select class="form-select" id="curso_id" name="curso_id" required>
-                                <?php
-                                // Preenche o dropdown de cursos
-                                $result_cursos = "SELECT curso_id, nome_curso FROM cursos";
-                                $cursos_result = mysqli_query($conn, $result_cursos);
-                                while ($curso = mysqli_fetch_assoc($cursos_result)) {
-                                    echo "<option value='" . htmlspecialchars($curso['curso_id']) . "'>" . htmlspecialchars($curso['nome_curso']) . "</option>";
-                                }
-                                ?>
-                            </select>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-                    <button type="submit" class="btn btn-primary" form="turmaForm">Salvar</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Bootstrap JS -->
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/js/bootstrap.min.js"></script>
     <script>
-        function editTurma(turma) {
-            document.getElementById('turma_id').value = turma.turma_id;
-            document.getElementById('nome_turma').value = turma.nome_turma;
-            document.getElementById('data_inicio').value = turma.data_inicio;
-            document.getElementById('data_fim').value = turma.data_fim;
-            document.getElementById('horario_inicio').value = turma.horario_inicio;
-            document.getElementById('horario_final').value = turma.horario_final;
-            document.getElementById('status').value = turma.status;
-            document.getElementById('curso_id').value = turma.curso_id;
-            document.getElementById('action').value = 'edit';
+        // Função para preencher o formulário no modal para edição
+        function editTurma(data) {
+            document.getElementById('turma_id').value = data.turma_id;
+            document.getElementById('nome_turma').value = data.nome_turma;
+            document.getElementById('data_inicio').value = data.data_inicio;
+            document.getElementById('data_fim').value = data.data_fim;
+            document.getElementById('horario_inicio').value = data.horario_inicio;
+            document.getElementById('horario_final').value = data.horario_final;
+            document.getElementById('status').value = data.status;
+
+            let cursoSelect = document.getElementById('curso_id');
+
+            // Percorre as opções do select e define a que corresponde ao nome do curso
+            for (let i = 0; i < cursoSelect.options.length; i++) {
+                if (cursoSelect.options[i].text === data.nome_curso) {
+                    cursoSelect.selectedIndex = i;
+                    break;
+                }
+            }
+
+            document.getElementById('action').value = 'update';
+            document.querySelector('.modal-title').textContent = 'Editar Turma';
         }
 
+
+        // Função para limpar o formulário no modal para adicionar novas turmas
         function clearForm() {
             document.getElementById('turmaForm').reset();
             document.getElementById('turma_id').value = '';
+            document.getElementById('status').value = 'ATIVA'; // Define valor padrão para status
             document.getElementById('action').value = 'add';
+            document.querySelector('.modal-title').textContent = 'Adicionar Nova Turma';
+        }
+
+        // Função para submeter o formulário
+        function submitForm() {
+            document.getElementById('turmaForm').submit();
         }
     </script>
-
 </body>
+
+        <?php mysqli_close($conn)?>
 
 </html>
