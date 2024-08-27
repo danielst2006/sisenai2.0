@@ -1,8 +1,7 @@
 <?php
 session_start();
-if(isset($_SESSION['login'])){
-    if($_SESSION['tipo_usuario'] == "COPED" || $_SESSION['tipo_usuario'] == "ADM"){
-
+if (isset($_SESSION['login'])) {
+    if ($_SESSION['tipo_usuario'] == "COPED" || $_SESSION['tipo_usuario'] == "ADM") {
     } else {
         header('Location: ../form/menu.php');
         exit;
@@ -215,28 +214,26 @@ if ($result_cursos === false) {
                                             <div class="mb-3">
                                                 <label for="area_tecnologica" class="form-label">Área Tecnológica</label>
                                                 <select class="form-select" id="area_tecnologica" name="area_tecnologica" required>
-                                                    <option value="">Selecione uma área</option>
-                                                    <option value="Automotiva">Automotiva</option>
-                                                    <option value="Automação Industrial">Automação Industrial</option>
-                                                    <option value="Eletrônica">Eletrônica</option>
-                                                    <option value="Eletrotécnica">Eletrotécnica</option>
-                                                    <option value="Mecânica">Mecânica</option>
-                                                    <option value="Mecatrônica">Mecatrônica</option>
-                                                    <option value="TI Software">TI Software</option>
-                                                    <option value="TI Hardware">TI Hardware</option>
-                                                    <option value="Desenvolvimento de Sistemas">Desenvolvimento de Sistemas</option>
-                                                    <option value="Redes de Computadores">Redes de Computadores</option>
-                                                    <option value="Manutenção Industrial">Manutenção Industrial</option>
-                                                    <option value="Telecomunicações">Telecomunicações</option>
-                                                    <option value="Química">Química</option>
-                                                    <option value="Metalurgia">Metalurgia</option>
-                                                    <option value="Logística">Logística</option>
-                                                    <option value="Gestão da Produção">Gestão da Produção</option>
-                                                    <option value="Segurança do Trabalho">Segurança do Trabalho</option>
-                                                    <option value="Construção Civil">Construção Civil</option>
-                                                    <option value="Design de Produto">Design de Produto</option>
-                                                    <option value="Gestão Ambiental">Gestão Ambiental</option>
-                                                    <option value="Energia Renovável">Energia Renovável</option>
+                                                    <option value="ALIMENTOS E BEBIDAS">ALIMENTOS E BEBIDAS</option>
+                                                    <option value="AUTOMAÇÃO">AUTOMAÇÃO</option>
+                                                    <option value="AUTOMOTIVA">AUTOMOTIVA</option>
+                                                    <option value="BIOCOMBUSTÍVEIS">BIOCOMBUSTÍVEIS</option>
+                                                    <option value="CONSTRUÇÃO CIVIL">CONSTRUÇÃO CIVIL</option>
+                                                    <option value="EDUCAÇÃO">EDUCAÇÃO</option>
+                                                    <option value="ELETROELETRÔNICA">ELETROELETRÔNICA</option>
+                                                    <option value="ENERGIA">ENERGIA</option>
+                                                    <option value="GESTÃO">GESTÃO</option>
+                                                    <option value="GRÁFICA E EDITORIAL">GRÁFICA E EDITORIAL</option>
+                                                    <option value="LOGÍSTICA">LOGÍSTICA</option>
+                                                    <option value="MADEIRA E MOBILIÁRIO">MADEIRA E MOBILIÁRIO</option>
+                                                    <option value="MEIO AMBIENTE">MEIO AMBIENTE</option>
+                                                    <option value="METALMECÂNICA">METALMECÂNICA</option>
+                                                    <option value="QUÍMICA">QUÍMICA</option>
+                                                    <option value="REFRIGERAÇÃO E CLIMATIZAÇÃO">REFRIGERAÇÃO E CLIMATIZAÇÃO</option>
+                                                    <option value="SEGURANÇA DO TRABALHO">SEGURANÇA DO TRABALHO</option>
+                                                    <option value="TECNOLOGIA DA INFORMAÇÃO">TECNOLOGIA DA INFORMAÇÃO</option>
+                                                    <option value="TELECOMUNICAÇÕES">TELECOMUNICAÇÕES</option>
+                                                    <option value="VESTUÁRIO">VESTUÁRIO</option>
                                                 </select>
                                             </div>
 
