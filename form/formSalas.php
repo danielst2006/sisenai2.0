@@ -1,5 +1,4 @@
 <?php 
-
 session_start();
 if(isset($_SESSION['login'])){
     if($_SESSION['tipo_usuario'] == "COPED" || $_SESSION['tipo_usuario'] == "ADM"){
@@ -77,8 +76,18 @@ include_once '../head/menu.php';
                         // Conexão com o banco de dados
                         include_once '../bd/conn.php';
 
-                        // Consulta SQL para buscar salas junto com o nome do andar
-                        $sql = "SELECT s.id_sala, s.nome as nome_sala, andar.nome as nome_andar, andar.id_andar FROM salas s JOIN andar ON andar_id = andar.id_andar";
+                        // Definindo quantos registros por página
+                        $registros_por_pagina = 10;
+
+                        // Descobrir qual página estamos
+                        $pagina = isset($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
+                        $inicio = ($pagina - 1) * $registros_por_pagina;
+
+                        // Consulta SQL para buscar salas junto com o nome do andar com paginação
+                        $sql = "SELECT s.id_sala, s.nome as nome_sala, andar.nome as nome_andar, andar.id_andar 
+                                FROM salas s 
+                                JOIN andar ON andar_id = andar.id_andar 
+                                LIMIT $inicio, $registros_por_pagina";
                         $resultado = mysqli_query($conn, $sql);
 
                         // Verifica se há salas e exibe cada uma em uma linha da tabela
@@ -95,7 +104,7 @@ include_once '../head/menu.php';
                                     <button class='btn action-button edit-button me-2' data-bs-toggle='modal' data-bs-target='#exampleModal' onclick='editRoom(<?= json_encode($row); ?>)'><i class='fas fa-pencil-alt'></i></button>
                                     
                                     <!-- Formulário de exclusão -->
-                                    <form action='../controls/cadastrarSala.php' method='POST' style='display:inline-block;'>
+                                    <form action='../controls/cadastrarSalas.php' method='POST' style='display:inline-block;'>
                                         <input type='hidden' name='id_sala' value='<?= htmlspecialchars($row['id_sala']); ?>'>
                                         <input type='hidden' name='action' value='delete'>
 
@@ -117,6 +126,34 @@ include_once '../head/menu.php';
                         ?>
                     </tbody>
                 </table>
+
+                <?php
+                // Consulta para contar o número total de salas
+                $sqlTotal = "SELECT COUNT(*) as total FROM salas";
+                $resultadoTotal = mysqli_query($conn, $sqlTotal);
+                $totalRegistros = mysqli_fetch_assoc($resultadoTotal)['total'];
+
+                // Calcula o número total de páginas
+                $num_pagina = ceil($totalRegistros / $registros_por_pagina);
+                ?>
+
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item <?php echo ($pagina <= 1) ? 'disabled' : ''; ?>">
+                            <a class="page-link" href="<?php echo ($pagina > 1) ? 'formSalas.php?pagina=' . ($pagina - 1) : '#'; ?>" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                        <?php for ($i = 1; $i <= $num_pagina; $i++) { ?>
+                            <li class="page-item <?php echo ($pagina == $i) ? 'active' : ''; ?>"><a class="page-link" href="formSalas.php?pagina=<?php echo $i; ?>"><?php echo $i; ?></a></li>
+                        <?php } ?>
+                        <li class="page-item <?php echo ($pagina >= $num_pagina) ? 'disabled' : ''; ?>">
+                            <a class="page-link" href="<?php echo ($pagina < $num_pagina) ? 'formSalas.php?pagina=' . ($pagina + 1) : '#'; ?>" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
 
                 <!-- Modal para adicionar/editar salas -->
                 <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
