@@ -24,7 +24,7 @@ if (isset($_POST['busca'])) {
 
 // Paginação
 $pagina = (isset($_GET['pagina'])) ? $_GET['pagina'] : 1;
-$quantidade_pg = 5;
+$quantidade_pg = 10;
 $inicio = ($quantidade_pg * $pagina) - $quantidade_pg;
 
 // Consulta para contar o total de registros
@@ -37,9 +37,26 @@ $consulta = mysqli_query($conn, $result_turma);
 if ($consulta === false) {
     die("Error in SQL query: " . mysqli_error($conn));
 }
+   
+$pagina = isset($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
+$quantidade_pg = 10; // Ajuste a quantidade de registros por página conforme necessário
+$inicio = ($quantidade_pg * $pagina) - $quantidade_pg;
 
-$total_turma = mysqli_fetch_assoc($consulta)['total'];
+// Consulta para contar o total de registros
+$result_turma = "SELECT COUNT(*) AS total FROM turmas t 
+                 JOIN cursos c ON t.curso_id = c.curso_id 
+                 WHERE t.nome_turma LIKE ? 
+                    OR c.nome_curso LIKE ?";
+$stmt = mysqli_prepare($conn, $result_turma);
+$search_param = "%$pesquisa%";
+mysqli_stmt_bind_param($stmt, 'ss', $search_param, $search_param);
+mysqli_stmt_execute($stmt);
+$result = mysqli_stmt_get_result($stmt);
+$total_turma = mysqli_fetch_assoc($result)['total'];
 $num_pagina = ceil($total_turma / $quantidade_pg);
+
+
+
 
 // Consulta para buscar as turmas
 $sql = "SELECT t.turma_id, t.nome_turma, t.data_inicio, t.data_fim, t.horario_inicio, t.horario_final, t.status, c.nome_curso 
@@ -179,21 +196,21 @@ $resultado = mysqli_query($conn, $sql);
                             </tbody>
                         </table>
 
-                        <nav aria-label="Page navigation">
+                        <!-- Paginação -->
+                        <nav>
                             <ul class="pagination justify-content-center">
-                                <li class="page-item <?php echo ($pagina <= 1) ? 'disabled' : ''; ?>">
-                                    <a class="page-link" href="<?php echo ($pagina > 1) ? 'formTurmas.php?pagina=' . ($pagina - 1) : '#'; ?>" aria-label="Previous">
-                                        <span aria-hidden="true">&laquo;</span>
-                                    </a>
-                                </li>
-                                <?php for ($i = 1; $i <= $num_pagina; $i++) { ?>
-                                    <li class="page-item <?php echo ($pagina == $i) ? 'active' : ''; ?>"><a class="page-link" href="formTurmas.php?pagina=<?php echo $i; ?>"><?php echo $i; ?></a></li>
-                                <?php } ?>
-                                <li class="page-item <?php echo ($pagina >= $num_pagina) ? 'disabled' : ''; ?>">
-                                    <a class="page-link" href="<?php echo ($pagina < $num_pagina) ? 'formTurmas.php?pagina=' . ($pagina + 1) : '#'; ?>" aria-label="Next">
-                                        <span aria-hidden="true">&raquo;</span>
-                                    </a>
-                                </li>
+                                <?php
+                                if ($pagina > 1) {
+                                    echo '<li class="page-item"><a class="page-link" href="formTurmas.php?pagina=' . ($pagina - 1) . '">Anterior</a></li>';
+                                }
+                                for ($i = 1; $i <= $num_pagina; $i++) {
+                                    $active = ($i == $pagina) ? 'active' : '';
+                                    echo '<li class="page-item ' . $active . '"><a class="page-link" href="formTurmas.php?pagina=' . $i . '">' . $i . '</a></li>';
+                                }
+                                if ($pagina < $num_pagina) {
+                                    echo '<li class="page-item"><a class="page-link" href="formTurmas.php?pagina=' . ($pagina + 1) . '">Próximo</a></li>';
+                                }
+                                ?>
                             </ul>
                         </nav>
 
