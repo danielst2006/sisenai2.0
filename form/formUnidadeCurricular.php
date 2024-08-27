@@ -1,8 +1,8 @@
 <?php
 
 session_start();
-if(isset($_SESSION['login'])){
-    if($_SESSION['tipo_usuario'] == "COPED" || $_SESSION['tipo_usuario'] == "ADM"){
+if (isset($_SESSION['login'])) {
+    if ($_SESSION['tipo_usuario'] == "COPED" || $_SESSION['tipo_usuario'] == "ADM") {
 
     } else {
         header('Location: ../form/menu.php');
@@ -15,19 +15,16 @@ if(isset($_SESSION['login'])){
 include_once '../head/menu.php';
 include_once "../bd/conn.php";
 
-if (isset($_POST['busca'])) {
-    $pesquisa = $_POST['busca'];
-} else {
-    $pesquisa = '';
-}
+$pesquisa = isset($_POST['busca']) ? $_POST['busca'] : '';
 
 // Paginação
-$pagina = (isset($_GET['pagina'])) ? $_GET['pagina'] : 1;
-$quantidade_pg = 5;
+$pagina = isset($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
+$quantidade_pg = 10;
 $inicio = ($quantidade_pg * $pagina) - $quantidade_pg;
 
 // Consulta para contar o total de registros
-$result_curso = "SELECT COUNT(*) AS total FROM unidade_curricular uc 
+$result_curso = "SELECT COUNT(*) AS total 
+                 FROM unidade_curricular uc 
                  JOIN cursos c ON uc.curso_id = c.curso_id 
                  WHERE c.nome_curso LIKE '%$pesquisa%'";
 $consulta = mysqli_query($conn, $result_curso);
@@ -39,14 +36,15 @@ if ($consulta === false) {
 $total_curso = mysqli_fetch_assoc($consulta)['total'];
 $num_pagina = ceil($total_curso / $quantidade_pg);
 
-// Consulta para buscar as unidades curriculares
+// Consulta para buscar as unidades curriculares com paginação
 $sql = "SELECT uc.idunidade_curricular, uc.nome_unidade, uc.carga_horaria, c.curso_id, c.nome_curso AS curso_nome 
         FROM unidade_curricular uc 
         JOIN cursos c ON uc.curso_id = c.curso_id 
         WHERE uc.idunidade_curricular LIKE CONCAT('%', '$pesquisa', '%') 
            OR uc.nome_unidade LIKE CONCAT('%', '$pesquisa', '%') 
            OR uc.carga_horaria LIKE CONCAT('%', '$pesquisa', '%') 
-           OR c.nome_curso LIKE CONCAT('%', '$pesquisa', '%')";
+           OR c.nome_curso LIKE CONCAT('%', '$pesquisa', '%')
+        LIMIT $inicio, $quantidade_pg";
 
 $resultado = mysqli_query($conn, $sql);
 
@@ -73,7 +71,7 @@ $resultado = mysqli_query($conn, $sql);
                     <div class="pesquisa">
                         <form action="formUnidadeCurricular.php" method="post" class="mb-4">
                             <div class="input-group input-group-sm" style="max-width: 300px;">
-                                <input type="search" class="form-control" placeholder="Pesquisar" id="pesquisar" name="busca">
+                                <input type="search" class="form-control" placeholder="Pesquisar" id="pesquisar" name="busca" value="<?= htmlspecialchars($pesquisa); ?>">
                                 <div class="input-group-append">
                                     <button type="submit" class="btn btn-primary btn-sm">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
@@ -85,7 +83,7 @@ $resultado = mysqli_query($conn, $sql);
                         </form>
 
                         <div class="d-flex justify-content-between align-items-center mb-3">
-                        <div class="flex-grow-1">
+                            <div class="flex-grow-1">
                                 <?php
                                 // Exibe uma mensagem de sucesso ou erro com base no parâmetro de status na URL
                                 if (isset($_GET['status'])) {
@@ -185,103 +183,82 @@ $resultado = mysqli_query($conn, $sql);
                             </ul>
                         </nav>
 
-                        <!-- Modal para adicionar/editar unidades curriculares -->
-                        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                            <div class="modal-dialog">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title" id="exampleModalLabel">Adicionar Nova Unidade Curricular</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                    </div>
-
-                                    <div class="modal-body">
-                                        <form id="unidadeCurricularForm" action="../controls/cadastrarUnidadeCurricular.php" method="POST">
-                                            <input type="hidden" id="idunidade_curricular" name="idunidade_curricular">
-                                            <input type="hidden" id="action" name="action" value="add">
-
-                                            <div class="mb-3">
-                                                <label for="nome_unidade" class="form-label">Nome da Unidade</label>
-                                                <input type="text" class="form-control" id="nome_unidade" name="nome_unidade" required>
-                                            </div>
-                                            <div class="mb-3">
-                                                <label for="carga_horaria" class="form-label">Carga Horária</label>
-                                                <input type="number" class="form-control" id="carga_horaria" name="carga_horaria" required>
-                                            </div>
-                                            <div class="mb-3">
-                                                <label for="curso" class="form-label">Curso</label>
-                                                <select class="form-select" id="curso" name="curso_id" required>
-                                                    <?php
-                                                    $query = "SELECT curso_id, nome_curso FROM cursos";
-                                                    $result = mysqli_query($conn, $query);
-
-                                                    if ($result) {
-                                                        while ($row = mysqli_fetch_assoc($result)) {
-                                                            echo "<option value='{$row['curso_id']}'>{$row['nome_curso']}</option>";
-                                                        }
-                                                    } else {
-                                                        echo "<option value=''>Nenhum curso disponível</option>";
-                                                    }
-                                                    ?>
-                                                </select>
-
-                                            </div>
-                                        </form>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-                                        <button type="submit" class="btn btn-primary" onclick="submitForm()">Salvar</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Bootstrap JS and dependencies -->
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/js/bootstrap.min.js"></script>
-    <script>
-        // Função para preencher o formulário no modal para edição
-        function editUnidadeCurricular(data) {
-            document.getElementById('idunidade_curricular').value = data.idunidade_curricular;
-            document.getElementById('nome_unidade').value = data.nome_unidade;
-            document.getElementById('carga_horaria').value = data.carga_horaria;
+        <!-- Modal para adicionar/editar unidade curricular -->
+        <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Adicionar Nova Sala</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                      </div>
+                    <div class="modal-body">
+                        <form id="formUnidadeCurricular" action="../controls/cadastrarUnidadeCurricular.php" method="post">
+                            <input type="hidden" id="idunidade_curricular" name="idunidade_curricular">
 
-            let cursoSelect = document.getElementById('curso');
+                            <div class="form-group">
+                                <label for="nome_unidade">Nome da Unidade</label>
+                                <input type="text" class="form-control" id="nome_unidade" name="nome_unidade" required>
+                            </div>
 
-            // Seleciona a opção correta no <select> com base no curso_id
-            for (let i = 0; i < cursoSelect.options.length; i++) {
-                if (cursoSelect.options[i].value == data.curso_id) {
-                    cursoSelect.selectedIndex = i;
-                    break;
-                }
+                            <div class="form-group">
+                                <label for="carga_horaria">Carga Horária</label>
+                                <input type="number" class="form-control" id="carga_horaria" name="carga_horaria" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="curso_id">Curso</label>
+                                <select class="form-control" id="curso_id" name="curso_id" required>
+                                    <option value="" disabled selected>Selecione o curso...</option>
+
+                                    <?php
+                                    // Consulta para listar os cursos
+                                    $sql_curso = "SELECT curso_id, nome_curso FROM cursos";
+                                    $resultado_curso = mysqli_query($conn, $sql_curso);
+
+                                    if (mysqli_num_rows($resultado_curso) > 0) {
+                                        while ($curso = mysqli_fetch_assoc($resultado_curso)) {
+                                            echo '<option value="' . htmlspecialchars($curso['curso_id']) . '">' . htmlspecialchars($curso['nome_curso']) . '</option>';
+                                        }
+                                    }
+                                    ?>
+                                </select>
+                            </div>
+
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                <button type="submit" class="btn btn-primary">Salvar</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bootstrap JS -->
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+        <script src="https://kit.fontawesome.com/a076d05399.js"></script>
+
+        <script>
+            function editUnidadeCurricular(unidade) {
+                document.getElementById('idunidade_curricular').value = unidade.idunidade_curricular;
+                document.getElementById('nome_unidade').value = unidade.nome_unidade;
+                document.getElementById('carga_horaria').value = unidade.carga_horaria;
+                document.getElementById('curso_id').value = unidade.curso_id;
             }
 
-            document.getElementById('action').value = 'update';
-            document.querySelector('.modal-title').textContent = 'Editar Unidade Curricular';
-        }
+            function clearForm() {
+                document.getElementById('idunidade_curricular').value = '';
+                document.getElementById('nome_unidade').value = '';
+                document.getElementById('carga_horaria').value = '';
+                document.getElementById('curso_id').value = '';
+            }
+        </script>
 
-
-
-        // Função para limpar o formulário no modal para adicionar novas unidades curriculares
-        function clearForm() {
-            document.getElementById('unidadeCurricularForm').reset();
-            document.getElementById('idunidade_curricular').value = '';
-            document.getElementById('action').value = 'add';
-            document.querySelector('.modal-title').textContent = 'Adicionar Nova Unidade Curricular';
-        }
-
-        // Função para submeter o formulário
-        function submitForm() {
-            document.getElementById('unidadeCurricularForm').submit();
-        }
-    </script>
 </body>
-
-        <?php mysqli_close($conn)?>
 
 </html>

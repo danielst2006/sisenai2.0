@@ -22,7 +22,7 @@ if (isset($_POST['busca'])) {
 
 // Paginação
 $pagina = (isset($_GET['pagina'])) ? $_GET['pagina'] : 1;
-$quantidade_pg = 5;
+$quantidade_pg = 10;
 $inicio = ($quantidade_pg * $pagina) - $quantidade_pg;
 
 // Consulta para contar o total de registros
@@ -38,14 +38,15 @@ if ($consulta === false) {
 $total_usuario = mysqli_fetch_assoc($consulta)['total'];
 $num_pagina = ceil($total_usuario / $quantidade_pg);
 
-// Consulta para buscar os usuários
+// Consulta para buscar os usuários com paginação
 $sql = "SELECT u.idUsuario, u.nome_usuario, u.email, u.telefone, u.senha, u.tipo_contrato, u.tipo_usuario_id, u.codigo_acesso, tu.tipo 
 FROM usuarios u 
 JOIN tipo_usuario tu ON u.tipo_usuario_id = tu.idTipo_usuario 
 WHERE u.nome_usuario LIKE CONCAT('%', '$pesquisa', '%') 
    OR u.email LIKE CONCAT('%', '$pesquisa', '%') 
    OR u.telefone LIKE CONCAT('%', '$pesquisa', '%') 
-   OR tu.tipo LIKE CONCAT('%', '$pesquisa', '%')";
+   OR tu.tipo LIKE CONCAT('%', '$pesquisa', '%')
+LIMIT $inicio, $quantidade_pg";
 $resultado = mysqli_query($conn, $sql);
 
 ?>
@@ -246,11 +247,6 @@ $resultado = mysqli_query($conn, $sql);
                                                     }
                                                     ?>
                                                 </select>
-                                            </div>
-
-                                            <div class="mb-3">
-                                                <label for="codigo_acesso" class="form-label">Código de Acesso</label>
-                                                <input type="text" class="form-control" id="codigo_acesso" name="codigo_acesso" required>
                                             </div>
 
                                             <button type="submit" class="btn btn-primary">Salvar</button>
