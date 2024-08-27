@@ -119,6 +119,6 @@ mysqli_close($conn);
     </div>
 </div>
 
-<script src="scripts.js"></script>
+<script src="perfil.js"></script>
 </body>
 </html>

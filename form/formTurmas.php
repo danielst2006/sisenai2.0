@@ -2,9 +2,8 @@
 
 session_start();
 
-if(isset($_SESSION['login'])){
-    if($_SESSION['tipo_usuario'] == "COPED" || $_SESSION['tipo_usuario'] == "ADM"){
-
+if (isset($_SESSION['login'])) {
+    if ($_SESSION['tipo_usuario'] == "COPED" || $_SESSION['tipo_usuario'] == "ADM") {
     } else {
         header('Location: ../form/menu.php');
     }
@@ -24,7 +23,7 @@ if (isset($_POST['busca'])) {
 
 // Paginação
 $pagina = (isset($_GET['pagina'])) ? $_GET['pagina'] : 1;
-$quantidade_pg = 10;
+$quantidade_pg = 1;
 $inicio = ($quantidade_pg * $pagina) - $quantidade_pg;
 
 // Consulta para contar o total de registros
@@ -37,9 +36,8 @@ $consulta = mysqli_query($conn, $result_turma);
 if ($consulta === false) {
     die("Error in SQL query: " . mysqli_error($conn));
 }
-   
 $pagina = isset($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
-$quantidade_pg = 10; // Ajuste a quantidade de registros por página conforme necessário
+$quantidade_pg = 1; // Ajuste a quantidade de registros por página conforme necessário
 $inicio = ($quantidade_pg * $pagina) - $quantidade_pg;
 
 // Consulta para contar o total de registros
@@ -54,8 +52,6 @@ mysqli_stmt_execute($stmt);
 $result = mysqli_stmt_get_result($stmt);
 $total_turma = mysqli_fetch_assoc($result)['total'];
 $num_pagina = ceil($total_turma / $quantidade_pg);
-
-
 
 
 // Consulta para buscar as turmas
@@ -213,7 +209,6 @@ $resultado = mysqli_query($conn, $sql);
                                 ?>
                             </ul>
                         </nav>
-
                         <!-- Modal para adicionar/editar turmas -->
                         <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                             <div class="modal-dialog">
@@ -369,6 +364,6 @@ $resultado = mysqli_query($conn, $sql);
     </script>
 </body>
 
-        <?php mysqli_close($conn)?>
+<?php mysqli_close($conn) ?>
 
 </html>
