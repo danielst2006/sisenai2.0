@@ -39,12 +39,12 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
    die   . mysqli_error($conn);
 
-    // if ($resultado) {
-    //     header('Location: ../form/formAgendamentos.php?status=success');
-    // } else {
-    //     header('Location: ../form/formAgendamentos.php?status=error');
-    // }
-    // exit();
+    if ($resultado) {
+        header('Location: ../form/formAgendamentos.php?status=success');
+    } else {
+        header('Location: ../form/formAgendamentos.php?status=error');
+    }
+    exit();
 }
 
 mysqli_close($conn);
