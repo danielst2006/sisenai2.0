@@ -26,25 +26,31 @@
     <div id="mySidebar" class="sidebar" style="background-color: rgb(231, 78, 22);">
       <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">×</a>
       <a href="/sisenai2.0/index.php">Inicio</a>
+      <a href="/sisenai2.0/form/formCurso.php">Cursos</a>
+      <a href="/sisenai2.0/form/formUnidadeCurricular.php">Unidade Curricular</a>
+      <a href="/sisenai2.0/form/formTurmas.php">Turmas</a>
+      <a href="/sisenai2.0/form/formProfessor.php">Professores</a>
+
       <a href="/sisenai2.0/form/formAgendamentos.php">Agendamento</a>
       <a href="/sisenai2.0/form/formAndar.php">Andar</a>
-      <a href="/sisenai2.0/form/formCurso.php">Cursos</a>
+      <a href="/sisenai2.0/form/formSalas.php">Salas</a>
+      
       
       <a href="/sisenai2.0/form/formFeriados.php">Feriados</a>
       <a href="/sisenai2.0/form/formFerias.php">Férias</a>
-      <a href="/sisenai2.0/form/formProfessor.php">Professores</a>
-      <a href="/sisenai2.0/form/formSalas.php">Salas</a>
       
-      <a href="/sisenai2.0/form/formTurmas.php">Turmas</a>
-      <a href="/sisenai2.0/form/formUnidadeCurricular.php">Unidade Curricular</a>
+      
+      
+      
+      
       <a href="/sisenai2.0/form/formUsuarios.php">Usuários</a>
     </div>
     
     
     <div id="profileSidebar" class="sidebar-profile" style="background-color: rgb(22, 65, 147);">
       <a href="javascript:void(0)" class="closebtn-profile" onclick="closeProfileNav()">×</a>
-      <a href="../form/perfil.php">Perfil</a>
-      <a href="../controls/logout.php">Sair</a>
+      <a href="/sisenai2.0/form/perfil.php">Perfil</a>
+      <a href="/sisenai2.0/controls/logout.php">Sair</a>
     </div>
     
 

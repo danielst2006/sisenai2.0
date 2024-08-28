@@ -23,7 +23,7 @@ if (isset($_POST['busca'])) {
 
 // Paginação
 $pagina = isset($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
-$quantidade_pg = 5;
+$quantidade_pg = 10;
 $inicio = ($quantidade_pg * $pagina) - $quantidade_pg;
 
 // Consulta para contar o total de registros

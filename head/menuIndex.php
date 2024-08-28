@@ -12,26 +12,26 @@
 <body>
   <header>
     <div class="navbar navbar-expand-md" style="background-color: rgb(218 224 233);">
-      <button class="openbtn" style="background-color: rgb(218 224 233);" onclick="openNav()">☰</button>
+      <!-- <button class="openbtn" style="background-color: rgb(218 224 233);" onclick="openNav()">☰</button> -->
       <button class="openbtn-profile ms-auto" style="background-color: rgb(218 224 233);" onclick="openProfileNav()">
         <img src="/sisenai2.0/imagens/senai.png" alt="Logo" class="logo">
         <i class="fas fa-user"></i>
       </button>
     </div>
 
-    <div id="mySidebar" class="sidebar" style="background-color: rgb(231, 78, 22);">
+    <!-- <div id="mySidebar" class="sidebar" style="background-color: rgb(231, 78, 22);">
       <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">×</a>
       <a href="index.php">Inicio</a>
-      <a href="../sisenai2.0/form/login.php">Sair</a>
+       <a href="../sisenai2.0/form/login.php">Sair</a>
 
-    </div>
+    </div> -->
     
     
-    <div id="profileSidebar" class="sidebar-profile" style="background-color: rgb(22, 65, 147);">
+    <!-- <div id="profileSidebar" class="sidebar-profile" style="background-color: rgb(22, 65, 147);">
       <a href="javascript:void(0)" class="closebtn-profile" onclick="closeProfileNav()">×</a>
       <a href="perfil.php">Perfil</a>
-      <!-- <a href="../controls/logout.php">Sair</a> -->
-    </div>
+       <a href="../controls/logout.php">Sair</a>
+    </div> -->
     
 
   <!-- Conteúdo da página aqui -->
