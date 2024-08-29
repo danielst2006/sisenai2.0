@@ -22,8 +22,8 @@ if (isset($_POST['busca'])) {
 }
 
 // Paginação
-$pagina = (isset($_GET['pagina'])) ? $_GET['pagina'] : 1;
-$quantidade_pg = 1;
+$pagina = (isset($_GET['pagina'])) ? (int)$_GET['pagina'] : 1;
+$quantidade_pg = 10; // Ajuste a quantidade de registros por página conforme necessário
 $inicio = ($quantidade_pg * $pagina) - $quantidade_pg;
 
 // Consulta para contar o total de registros
@@ -36,33 +36,20 @@ $consulta = mysqli_query($conn, $result_turma);
 if ($consulta === false) {
     die("Error in SQL query: " . mysqli_error($conn));
 }
-$pagina = isset($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
-$quantidade_pg = 1; // Ajuste a quantidade de registros por página conforme necessário
-$inicio = ($quantidade_pg * $pagina) - $quantidade_pg;
 
-// Consulta para contar o total de registros
-$result_turma = "SELECT COUNT(*) AS total FROM turmas t 
-                 JOIN cursos c ON t.curso_id = c.curso_id 
-                 WHERE t.nome_turma LIKE ? 
-                    OR c.nome_curso LIKE ?";
-$stmt = mysqli_prepare($conn, $result_turma);
-$search_param = "%$pesquisa%";
-mysqli_stmt_bind_param($stmt, 'ss', $search_param, $search_param);
-mysqli_stmt_execute($stmt);
-$result = mysqli_stmt_get_result($stmt);
-$total_turma = mysqli_fetch_assoc($result)['total'];
+$total_turma = mysqli_fetch_assoc($consulta)['total'];
 $num_pagina = ceil($total_turma / $quantidade_pg);
 
-
-// Consulta para buscar as turmas
+// Consulta para buscar as turmas com paginação
 $sql = "SELECT t.turma_id, t.nome_turma, t.data_inicio, t.data_fim, t.horario_inicio, t.horario_final, t.status, c.nome_curso 
-FROM turmas t 
-JOIN cursos c ON t.curso_id = c.curso_id 
-WHERE t.turma_id LIKE CONCAT('%', '$pesquisa', '%') 
-   OR t.nome_turma LIKE CONCAT('%', '$pesquisa', '%') 
-   OR t.data_inicio LIKE CONCAT('%', '$pesquisa', '%') 
-   OR t.data_fim LIKE CONCAT('%', '$pesquisa', '%') 
-   OR c.nome_curso LIKE CONCAT('%', '$pesquisa', '%')";
+        FROM turmas t 
+        JOIN cursos c ON t.curso_id = c.curso_id 
+        WHERE t.turma_id LIKE CONCAT('%', '$pesquisa', '%') 
+           OR t.nome_turma LIKE CONCAT('%', '$pesquisa', '%') 
+           OR t.data_inicio LIKE CONCAT('%', '$pesquisa', '%') 
+           OR t.data_fim LIKE CONCAT('%', '$pesquisa', '%') 
+           OR c.nome_curso LIKE CONCAT('%', '$pesquisa', '%')
+        LIMIT $inicio, $quantidade_pg";
 $resultado = mysqli_query($conn, $sql);
 
 ?>
@@ -90,9 +77,9 @@ $resultado = mysqli_query($conn, $sql);
                             <div class="input-group input-group-sm" style="max-width: 300px;">
                                 <input type="search" class="form-control" placeholder="Pesquisar" id="pesquisar" name="busca">
                                 <div class="input-group-append">
-                                    <button type="submit" class="btn btn-primary btn-sm">
+                                <button type="submit" class="btn btn-primary btn-sm">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
-                                            <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1-11 0" />
+                                            <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0" />
                                         </svg>
                                     </button>
                                 </div>
@@ -209,6 +196,7 @@ $resultado = mysqli_query($conn, $sql);
                                 ?>
                             </ul>
                         </nav>
+
                         <!-- Modal para adicionar/editar turmas -->
                         <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                             <div class="modal-dialog">
