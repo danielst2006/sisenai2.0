@@ -248,7 +248,7 @@ $resultado = mysqli_query($conn, $sql);
                                                 <label for="horario_inicio" class="form-label">Horário Início</label>
                                                 <input type="time" class="form-control" id="horario_inicio" name="horario_inicio" required>
                                             </div>
-                                          
+
                                             <div class="mb-3">
                                                 <label for="horario_fim" class="form-label">Horário Fim</label>
                                                 <input type="time" class="form-control" id="horario_fim" name="horario_fim" required>
@@ -312,7 +312,7 @@ $resultado = mysqli_query($conn, $sql);
                                                     <!-- As opções serão carregadas dinamicamente via AJAX -->
                                                 </select>
                                             </div>
-                                        
+
                                             <div class="mb-3">
                                                 <label for="usuario_idUsuario" class="form-label">Usuário</label>
                                                 <select class="form-select" id="usuario_idUsuario" name="usuario_idUsuario" required>
@@ -409,26 +409,29 @@ $resultado = mysqli_query($conn, $sql);
                 document.getElementById(dia).checked = true;
             });
 
-            let usuarioSelect = document.getElementById('usuario_idUsuario');
-            for (let i = 0; i < usuarioSelect.options.length; i++) {
-                if (usuarioSelect.options[i].text === data.nome_usuario) {
-                    usuarioSelect.selectedIndex = i;
-                    break;
-                }
-            }
-
-            let unidadeSelect = document.getElementById('unidade_curricular_id');
-            for (let i = 0; i < unidadeSelect.options.length; i++) {
-                if (unidadeSelect.options[i].text === data.nome_unidade) {
-                    unidadeSelect.selectedIndex = i;
-                    break;
-                }
-            }
-
             let turmaSelect = document.getElementById('turma_id');
             for (let i = 0; i < turmaSelect.options.length; i++) {
                 if (turmaSelect.options[i].text === data.nome_turma) {
                     turmaSelect.selectedIndex = i;
+                    break;
+                }
+            }
+
+            // Chama a função para carregar as unidades curriculares
+            fetchUnidadesCurriculares(function() {
+                let unidadeSelect = document.getElementById('unidade_curricular_id');
+                for (let i = 0; i < unidadeSelect.options.length; i++) {
+                    if (unidadeSelect.options[i].text === data.nome_unidade) {
+                        unidadeSelect.selectedIndex = i;
+                        break;
+                    }
+                }
+            });
+
+            let usuarioSelect = document.getElementById('usuario_idUsuario');
+            for (let i = 0; i < usuarioSelect.options.length; i++) {
+                if (usuarioSelect.options[i].text === data.nome_usuario) {
+                    usuarioSelect.selectedIndex = i;
                     break;
                 }
             }
@@ -481,6 +484,26 @@ $resultado = mysqli_query($conn, $sql);
                 xhr.send("turma_id=" + turma_id);
             } else {
                 document.getElementById('unidade_curricular_id').innerHTML = '<option value="">Selecione a turma primeiro</option>';
+            }
+        }
+
+        function fetchUnidadesCurriculares(callback) {
+            var turma_id = document.getElementById('turma_id').value;
+
+            if (turma_id) {
+                var xhr = new XMLHttpRequest();
+                xhr.open("POST", "fetch_unidades_curriculares.php", true);
+                xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+                xhr.onreadystatechange = function() {
+                    if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
+                        document.getElementById('unidade_curricular_id').innerHTML = this.responseText;
+                        if (callback) callback();
+                    }
+                };
+                xhr.send("turma_id=" + turma_id);
+            } else {
+                document.getElementById('unidade_curricular_id').innerHTML = '<option value="">Selecione a turma primeiro</option>';
+                if (callback) callback();
             }
         }
     </script>

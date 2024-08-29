@@ -15,9 +15,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
     $turma_id = $_POST['turma_id'];
     $sala_id = $_POST['sala_id'];
     $professor_id = $_POST['professor_id'];
-    $status = $_POST['status']; // Novo campo status
-
-    echo "$id, $data_inicio, $horario_inicio, $data_final, $horario_fim, $usuario_idUsuario, $unidade_curricular_id, $turma_id, $sala_id, $professor_id, $status";
+    $status = $_POST['status']; // Campo status conforme a tabela
     
     // Processa o campo 'dias_aula' se ele existir
     $dias_aula = isset($_POST['dias_aula']) ? implode(',', $_POST['dias_aula']) : '';
@@ -33,12 +31,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
         $sql = "DELETE FROM agendamento WHERE idAgendamento=$id";
     }
 
-   
-
-     $resultado = mysqli_query($conn, $sql);
-
-   die   . mysqli_error($conn);
-
+    $resultado = mysqli_query($conn, $sql);
     if ($resultado) {
         header('Location: ../form/formAgendamentos.php?status=success');
     } else {
