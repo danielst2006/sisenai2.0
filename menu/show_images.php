@@ -20,13 +20,13 @@
                 <thead>
                 <tr>
                     
-                    <th>TEMA</th>
-                    <th>ÁREA</th>
+                    <th>TURMA</th>
+                    <th>CURSO</th>
                     <th>SALA</th>
                     <th>ANDAR</th>
-                    <th>RESPONSAVEL</th>
+                    <th>PROFESSOR</th>
                     <th>INÍCIO</th>
-                    <th>FIM</th>
+                    <th>STATUS</th>
 		    
                 </tr>
                 </thead>

@@ -6,7 +6,6 @@ ob_start();
 
 include_once "../bd/conn.php";
 
-// Query SQL adaptada para retornar as informações necessárias para o agendamento e exibição de turmas
 $sql = "SELECT a.idAgendamento, a.data_inicio, a.horario_inicio, a.data_final, a.horario_fim, 
         a.usuario_idUsuario, a.unidade_curricular_id, a.turma_id, a.sala_id, a.professor_id, a.dias_aula, 
         ad.nome AS andar, a.status, t.nome_turma, c.nome_curso, s.nome AS nome_sala, p.nome AS nome_professor 
@@ -23,21 +22,24 @@ $consulta = mysqli_query($conn, $sql);
 if (!$consulta) {
     echo '<error>Consulta falhou: ' . mysqli_error($conn) . '</error>';
 } else {
-    $xml = new SimpleXMLElement('<agendamento/>');
+    $xml = new SimpleXMLElement('<turmas/>');
 
     while ($user_data = mysqli_fetch_assoc($consulta)) {
-        $agendamento = $xml->addChild('agendamento');
-
-        $agendamento->addChild('nome_turma', $user_data['nome_turma']);
-        $agendamento->addChild('nome_curso', $user_data['nome_curso']);
-        $agendamento->addChild('nome_sala', $user_data['nome_sala']);
-        $agendamento->addChild('andar', $user_data['andar']);
-        $agendamento->addChild('nome_professor', $user_data['nome_professor']);
-        $agendamento->addChild('horario_inicio', $user_data['horario_inicio']);
-        $agendamento->addChild('horario_final', $user_data['horario_final']);
-        $agendamento->addChild('data_inicio', $user_data['data_inicio']);
-        $agendamento->addChild('data_fim', $user_data['data_final']);
-        $agendamento->addChild('dias_aula', $user_data['dias_aula']);
+        $turma = $xml->addChild('turma');
+        
+        $turma->addChild('nome_turma', $user_data['nome_turma']);
+        $turma->addChild('nome_curso', $user_data['nome_curso']);
+        $turma->addChild('nome_sala', $user_data['nome_sala']);
+        $turma->addChild('andar', $user_data['andar']);
+        $turma->addChild('nome_professor', $user_data['nome_professor']);
+        $turma->addChild('horario_inicio', $user_data['horario_inicio']);
+        $turma->addChild('horario_final', $user_data['horario_fim']);
+        $turma->addChild('data_inicio', $user_data['data_inicio']);
+        $turma->addChild('data_fim', $user_data['data_final']);
+        $turma->addChild('dias_aula', $user_data['dias_aula']);
+        $turma->addChild('status', $user_data['status']);
+       
+        
     }
 
     // Limpar o buffer de saída e enviar o XML
@@ -45,5 +47,3 @@ if (!$consulta) {
     echo $xml->asXML();
 }
 exit;
-
-mysqli_close($conn);

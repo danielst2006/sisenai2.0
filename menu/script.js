@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
         .catch(error => console.error('Erro ao buscar dados:', error));
 });
 
-let registrosPorPagina = 10;
+let registrosPorPagina = 4;
 let paginaAtual = 0;
 let turmas = [];
 let turmasFiltradas = [];
@@ -32,6 +32,7 @@ function iniciarTabela(xmlDoc) {
         data_inicio: turma.getElementsByTagName('data_inicio')[0]?.textContent || '',
         data_fim: turma.getElementsByTagName('data_fim')[0]?.textContent || '',
         dias_aula: turma.getElementsByTagName('dias_aula')[0]?.textContent || '',
+        status: turma.getElementsByTagName('status')[0]?.textContent || '',
     }));
     filtrarTurmasPorPeriodoAtual();
     mostrarRegistros(paginaAtual);
@@ -81,6 +82,12 @@ function mostrarRegistros(pagina) {
     } else {
         registros.forEach(registro => {
             const tr = document.createElement('tr');
+            // Aplica a classe CSS com base no status
+            if (registro.status === 'ATIVA') {
+                tr.classList.add('linha-confirmada');
+            } else if (registro.status === 'CANCELADA') {
+                tr.classList.add('linha-cancelada');
+            }
             tr.innerHTML = `
                 <td>${registro.nome_turma}</td>
                 <td>${registro.nome_curso}</td>
@@ -88,12 +95,15 @@ function mostrarRegistros(pagina) {
                 <td>${registro.nome_andar}</td>
                 <td>${registro.nome_professor}</td>
                 <td>${registro.horario_inicio}</td>
-                <td>${registro.horario_final}</td>
+                <td>${registro.status === 'ATIVA' ? 'CONFIRMADO' : registro.status}</td>
             `;
             tbody.appendChild(tr);
         });
     }
 }
+
+
+
 
 
 function alternarPagina() {

@@ -1,5 +1,5 @@
 body {
-    font-family: Arial, sans-serif; /* Você pode substituir por 'Segoe UI' se disponível */
+    font-family: 'Courier New', Courier, monospace;  /* Você pode substituir por 'Segoe UI' se disponível */
     margin: 0;
     padding: 0;
     width: 100%;
@@ -10,8 +10,8 @@ body {
 
 .header1 {
     height: 100px;
-    background-color: #ffffff; /* Azul escuro */
-    color: #000000;
+    background-color: #f2f2f2; /* Azul escuro */
+    color: #164193;
     padding: 20px;
     display: flex;
     justify-content: space-between;
@@ -47,7 +47,7 @@ body {
 .table-container {
     width: 100%;
     overflow-x: auto;
-    background-color: #6f06be;
+    background-color: #ffffff;
     box-shadow: 4px 8px rgba(0, 0, 0, 0.1);
     border-radius: 8px;
 }
@@ -55,7 +55,7 @@ body {
 table {
     width: 100%;
     border-collapse: separate;
-    border-spacing: 0 20px; /* Ajustar espaçamento para melhor visualização */
+    border-spacing: 0 1cm; /* Ajustar espaçamento para melhor visualização */
 }
 
 td {
@@ -74,9 +74,9 @@ th {
     text-align: left;
 }
 
-tbody tr:hover {
+/* tbody tr:hover {
     background-color: #d19ff8; /* Azul claro no hover */
-}
+} */
 
 tbody tr:nth-child(even) {
     background-color: #bc79f0;
@@ -103,12 +103,14 @@ tbody tr:nth-child(even) {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-.bg-custom {
-    background-color: rgba(255, 0, 0, 1); /* Defina a cor desejada aqui */
-}
 
+    .linha-confirmada {
+        background-color: #05ad2c; /* Verde claro */
+    }
 
-
+    .linha-cancelada {
+        background-color: #bd0010; /* Vermelho claro */
+    }
 
 
 /* Media Queries for Responsiveness */
@@ -129,7 +131,6 @@ tbody tr:nth-child(even) {
     th, td {
         font-size: 28px;
     }
-
 }
 
 @media (max-width: 768px) {
