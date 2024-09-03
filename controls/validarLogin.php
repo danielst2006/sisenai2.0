@@ -25,13 +25,13 @@ if (isset($_POST['login'])) {
                 header("location: ../index.php");
                 exit();
             } else {
-                header("location: ../form/login.php");
+                header("location: ../login.php");
             }
         } else {
-            header("location: ../form/login.php");
+            header("location: ../login.php");
         }
     } else {
-        header("location: ../form/login.php");
+        header("location: ../login.php");
     }
 }
 
