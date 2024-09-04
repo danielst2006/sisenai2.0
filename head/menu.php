@@ -18,6 +18,7 @@
   <button class="openbtn" style="background-color: rgb(218 224 233);" onclick="openNav()">☰</button>
   <p class="text-dark mx-auto my-auto">Olá, <?php echo $_SESSION['login']; ?></p>
   <button class="openbtn-profile ms-auto" style="background-color: rgb(218 224 233);" onclick="openProfileNav()">
+    <img src="/sisenai2.0/imagens/Fita+amarela.png" alt="Logo2" class="logo2">
     <img src="/sisenai2.0/imagens/senai.png" alt="Logo" class="logo">
     <i class="fas fa-user"></i>
   </button>

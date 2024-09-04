@@ -14,6 +14,7 @@
     <div class="navbar navbar-expand-md" style="background-color: rgb(218 224 233);">
       <!-- <button class="openbtn" style="background-color: rgb(218 224 233);" onclick="openNav()">☰</button> -->
       <button class="openbtn-profile ms-auto" style="background-color: rgb(218 224 233);" onclick="openProfileNav()">
+        <img src="/sisenai2.0/imagens/Fita+amarela.png" alt="Logo2" class="logo2">
         <img src="/sisenai2.0/imagens/senai.png" alt="Logo" class="logo">
         <i class="fas fa-user"></i>
       </button>

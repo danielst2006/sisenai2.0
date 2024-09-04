@@ -33,6 +33,12 @@ body {
     height: auto;
 }
 
+.logo2 {
+    width: 300px;
+    height: auto;
+}
+
+
 .main-content {
     display: flex;
     flex-direction: column;
