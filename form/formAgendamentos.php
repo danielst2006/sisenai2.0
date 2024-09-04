@@ -20,6 +20,7 @@ include_once "../bd/conn.php";
 
 $pesquisa = $_POST['busca'] ?? '';
 $professor_id = $_POST['professor_id'] ?? '';
+$data_busca = $_POST['data_busca'] ?? ''; // Campo para a data
 
 // Paginação
 $pagina = $_GET['pagina'] ?? 1;
@@ -41,6 +42,11 @@ $result_agendamento = "SELECT COUNT(*) AS total FROM agendamento a
                           OR s.nome LIKE '%$pesquisa%' 
                           OR p.nome LIKE '%$pesquisa%')
                           AND a.status = 'ATIVA'";
+
+// Se foi fornecida uma data de busca, adiciona a condição de intervalo de data
+if (!empty($data_busca)) {
+    $result_agendamento .= " AND '$data_busca' BETWEEN a.data_inicio AND a.data_final";
+}
 
 if (!empty($professor_id)) {
     $result_agendamento .= " AND a.professor_id = '$professor_id'";
@@ -70,9 +76,13 @@ $sql = "SELECT a.idAgendamento, a.data_inicio, a.data_final, a.horario_inicio, a
            OR uc.nome_unidade LIKE CONCAT('%', '$pesquisa', '%') 
            OR t.nome_turma LIKE CONCAT('%', '$pesquisa', '%') 
            OR s.nome LIKE CONCAT('%', '$pesquisa', '%') 
-           OR p.nome LIKE CONCAT('%', '$pesquisa', '%'))";
+           OR p.nome LIKE CONCAT('%', '$pesquisa', '%'))
+           AND a.status = 'ATIVA'";
 
-           //AND a.status = 'ATIVA'
+// Se foi fornecida uma data de busca, adiciona a condição de intervalo de data
+if (!empty($data_busca)) {
+    $sql .= " AND '$data_busca' BETWEEN a.data_inicio AND a.data_final";
+}
 
 if (!empty($professor_id)) {
     $sql .= " AND a.professor_id = '$professor_id'";
@@ -113,12 +123,14 @@ $resultado = mysqli_query($conn, $sql);
                                     </button>
                                 </div>
                             </div>
+                            <div style="float: left; margin-right: 10px;">
+                                <input type="date" class="form-control" id="data_busca" name="data_busca" value="<?= htmlspecialchars($data_busca); ?>">
+                            </div>
                             <div style="float: left;">
-                                
                                 <select class="form-select" id="professor_id" name="professor_id" required onchange="this.form.submit()">
                                     <option value="">Selecione um professor</option>
                                     <?php
-                                    $query = "SELECT idProfessor, nome FROM professores";
+                                    $query = "SELECT idProfessor, nome FROM professores ORDER BY nome";
                                     $result = mysqli_query($conn, $query);
 
                                     if ($result) {
@@ -342,7 +354,7 @@ $resultado = mysqli_query($conn, $sql);
                                         </div>
 
                                         <div class="mb-3">
-                                            <label for="usuario_idUsuario" class="form-label">Agenda</label>
+                                            <label for="usuario_idUsuario" class="form-label">Agente</label>
                                             <select class="form-select" id="usuario_idUsuario" name="usuario_idUsuario" required>
                                                 <?php
                                                 $query = "SELECT idUsuario, nome_usuario FROM usuarios u JOIN tipo_usuario tu ON u.tipo_usuario_id = tu.idTipo_usuario WHERE tu.tipo = 'COPED'";

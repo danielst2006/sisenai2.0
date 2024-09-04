@@ -38,6 +38,7 @@ if (!$consulta) {
         $turma->addChild('data_fim', $user_data['data_final']);
         $turma->addChild('dias_aula', $user_data['dias_aula']);
         $turma->addChild('status', $user_data['status']);
+        $turma->addChild('idAgendamento', $user_data['idAgendamento']);
        
         
     }

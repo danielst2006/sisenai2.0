@@ -1,7 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
     fetchTurmas(); // Carrega as turmas ao iniciar a página
-    setInterval(fetchTurmas, 20000); // Atualiza as turmas a cada 60 segundos (60000 ms)
+    setInterval(fetchTurmas, 60000); // Atualiza as turmas a cada 60 segundos (60000 ms)
     setInterval(atualizarTempo, 1000); // Atualiza o relógio a cada segundo (1000 ms)
+    setInterval(alternarPagina, 20000); // Alterna a página a cada 20 segundos (20000 ms)
 });
 
 let registrosPorPagina = 4;
@@ -85,8 +86,13 @@ function mostrarRegistros(pagina) {
 
 function alternarPagina() {
     const totalPaginas = Math.ceil(turmasFiltradas.length / registrosPorPagina);
-    paginaAtual = (paginaAtual + 1) % totalPaginas;
-    mostrarRegistros(paginaAtual);
+
+    if (totalPaginas > 0) {
+        paginaAtual = (paginaAtual + 1) % totalPaginas;
+        mostrarRegistros(paginaAtual);
+    } else {
+        console.warn("Nenhuma página a ser exibida.");
+    }
 }
 
 const daysOfWeek = ["Domingo", "Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado"];

@@ -20,7 +20,7 @@ if (isset($_SESSION['login'])) {
 
 if($_SESSION['tipo_usuario'] == "ADM" || $_SESSION['tipo_usuario'] == "COPED") {
 
-    include_once "head/menu.php";
+    header('Location: menu/painelCoped.php');
 
 } elseif (($_SESSION['tipo_usuario'] == "GESTOR")){
 

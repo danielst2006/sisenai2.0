@@ -167,7 +167,7 @@ $total_turmas = $quantidade_manha + $quantidade_tarde + $quantidade_noite;
 
         <!-- Dashboard Stats -->
         <div class="row">
-            <div class="col-md-4">
+            <div class="col-md-6">
                 <div class="card card-custom h-100 d-flex flex-column ">
                     <div class="card-header-custom text-center">
                         <i class="fas fa-chalkboard-teacher icon-large"></i> Total de Turmas
@@ -191,7 +191,7 @@ $total_turmas = $quantidade_manha + $quantidade_tarde + $quantidade_noite;
                 </div>
             </div>
 
-            <div class="col-md-4">
+            <!-- <div class="col-md-4">
                 <div class="card card-custom h-100 d-flex flex-column">
                     <div class="card-header-custom text-center bg-success">
                         <i class="fas fa-user-tie icon-large"></i> Minhas Turmas
@@ -200,9 +200,9 @@ $total_turmas = $quantidade_manha + $quantidade_tarde + $quantidade_noite;
                         <p class="display-4 text-success">5</p>
                     </div>
                 </div>
-            </div>
+            </div> -->
 
-            <div class="col-md-4">
+            <div class="col-md-6">
                 <div class="card card-custom h-100 d-flex flex-column">
                     <div class="card-header-custom text-center bg-warning">
                         <i class="fas fa-calendar-day icon-large"></i> Turmas de Hoje
@@ -230,14 +230,17 @@ $total_turmas = $quantidade_manha + $quantidade_tarde + $quantidade_noite;
                         <th>STATUS</th>
                     </tr>
                 </thead>
+                <div id="current-date"></div>
+                <div id="current-time"></div>
                 <tbody id="turmas-body">
+
                     <!-- Conteúdo da tabela de turmas será inserido aqui via JavaScript -->
                 </tbody>
             </table>
         </div>
 
         <!-- Turmas que o Coordenador Acompanha -->
-        <div class="table-container">
+        <!-- <div class="table-container">
             <h2><i class="fas fa-user-check icon-large"></i> Turmas que o Coordenador Acompanha</h2>
             <table class="table table-hover">
                 <thead>
@@ -273,10 +276,10 @@ $total_turmas = $quantidade_manha + $quantidade_tarde + $quantidade_noite;
                     </tr>
                 </tbody>
             </table>
-        </div>
+        </div> -->
 
         <!-- Salas em Uso e Andares -->
-        <div class="table-container">
+        <!-- <div class="table-container">
             <h2><i class="fas fa-building icon-large"></i> Salas em Uso e Andares</h2>
             <table class="table table-hover">
                 <thead>
@@ -298,7 +301,7 @@ $total_turmas = $quantidade_manha + $quantidade_tarde + $quantidade_noite;
                         <td>Segurança do Trabalho</td>
                     </tr>
                 </tbody>
-            </table>
+            </table> -->
         </div>
     </div>
 
