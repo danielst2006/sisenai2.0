@@ -1,10 +1,10 @@
 <?php
 session_start();
-include_once '../models/conexao.php';
+include_once '../bd/conn.php';
 
 // Verificar se os dados foram enviados via POST
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $nome_de_usuario = $_SESSION['nome_de_usuario'];
+    $nome_de_usuario = $_SESSION['login'];
 
     // Lidar com o upload da foto de perfil
     if (isset($_FILES['foto_perfil']) && $_FILES['foto_perfil']['error'] == UPLOAD_ERR_OK) {
@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         if (in_array($extensao, $tipos_permitidos) && $foto_perfil['size'] <= 5 * 1024 * 1024) { // 5 MB
             if (move_uploaded_file($foto_perfil['tmp_name'], $caminho_destino)) {
                 // Atualizar o caminho da foto no banco de dados
-                $sql_foto = "UPDATE usuarios SET foto_perfil = '$nome_arquivo' WHERE nome_de_usuario = '$nome_de_usuario'";
+                $sql_foto = "UPDATE usuarios SET foto_perfil = '$nome_arquivo' WHERE nome_usuario = '$nome_de_usuario'";
                 mysqli_query($conn, $sql_foto);
             }
         }
@@ -26,18 +26,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     // Atualizar os outros dados do usuário apenas se forem enviados
     $campos = [];
-    if (!empty($_POST['nome'])) {
-        $nome = mysqli_real_escape_string($conn, $_POST['nome']);
-        $campos[] = "nome = '$nome'";
+    if (!empty($_POST['nome_usuario'])) {
+        $nome_usuario = mysqli_real_escape_string($conn, $_POST['nome_usuario']);
+        $campos[] = "nome_usuario = '$nome_usuario'";
     }
-    if (!empty($_POST['email'])) {
-        $email = mysqli_real_escape_string($conn, $_POST['email']);
-        $campos[] = "email = '$email'";
-    }
+
     if (!empty($_POST['telefone'])) {
         $telefone = mysqli_real_escape_string($conn, $_POST['telefone']);
         $campos[] = "telefone = '$telefone'";
     }
+
     if (!empty($_POST['senha'])) {
         $senha = mysqli_real_escape_string($conn, $_POST['senha']);
         $senha_hash = password_hash($senha, PASSWORD_DEFAULT);
@@ -45,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 
     if (!empty($campos)) {
-        $sql = "UPDATE usuarios SET " . implode(', ', $campos) . " WHERE nome_de_usuario = '$nome_de_usuario'";
+        $sql = "UPDATE usuarios SET " . implode(', ', $campos) . " WHERE nome_usuario = '$nome_de_usuario'";
         if (mysqli_query($conn, $sql)) {
             $_SESSION['mensagem_sucesso'] = "Perfil atualizado com sucesso!";
         } else {
@@ -54,7 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 
     mysqli_close($conn);
-    header("Location: ../views/perfil.php");
+    header("Location: ../form/perfil.php");
     exit();
 }
 ?>
