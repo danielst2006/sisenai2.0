@@ -39,7 +39,7 @@ $total_usuario = mysqli_fetch_assoc($consulta)['total'];
 $num_pagina = ceil($total_usuario / $quantidade_pg);
 
 // Consulta para buscar os usuários com paginação
-$sql = "SELECT u.idUsuario, u.nome_usuario, u.email, u.telefone, u.senha, u.tipo_contrato, u.tipo_usuario_id, u.codigo_acesso, tu.tipo 
+$sql = "SELECT u.idUsuario, u.nome_usuario, u.email, u.telefone, u.senha, u.tipo_contrato, u.tipo_usuario_id, tu.tipo 
 FROM usuarios u 
 JOIN tipo_usuario tu ON u.tipo_usuario_id = tu.idTipo_usuario 
 WHERE u.nome_usuario LIKE CONCAT('%', '$pesquisa', '%') 
@@ -291,7 +291,7 @@ $resultado = mysqli_query($conn, $sql);
                                 document.getElementById('senha').value = usuario.senha;
                                 document.getElementById('tipo_contrato').value = usuario.tipo_contrato;
                                 document.getElementById('tipo_usuario_id').value = usuario.tipo_usuario_id;
-                                document.getElementById('codigo_acesso').value = usuario.codigo_acesso;
+                                
 
                                 document.getElementById('formAction').value = 'update';
                                 document.getElementById('exampleModalLabel').innerText = 'Editar Usuário';

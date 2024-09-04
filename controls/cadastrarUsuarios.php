@@ -11,10 +11,10 @@ if ($action == 'insert') {
     $senha = isset($_POST['senha']) ? password_hash($_POST['senha'], PASSWORD_DEFAULT) : '';
     $tipo_contrato = isset($_POST['tipo_contrato']) ? $_POST['tipo_contrato'] : '';
     $tipo_usuario_id = isset($_POST['tipo_usuario_id']) ? $_POST['tipo_usuario_id'] : '';
-    $codigo_acesso = isset($_POST['codigo_acesso']) ? $_POST['codigo_acesso'] : '';
+    // $codigo_acesso = isset($_POST['codigo_acesso']) ? $_POST['codigo_acesso'] : '';
 
     // Verificar se todos os campos obrigatórios estão preenchidoss
-    if ($nome_usuario && $email && $telefone && $senha && $tipo_contrato && $tipo_usuario_id && $codigo_acesso) {
+    if ($nome_usuario && $email && $telefone && $senha && $tipo_contrato && $tipo_usuario_id) {
         // Verificar se o e-mail já está cadastrado
         $checkEmailQuery = "SELECT COUNT(*) AS total FROM usuarios WHERE email = '$email'";
         $result = mysqli_query($conn, $checkEmailQuery);
@@ -27,8 +27,8 @@ if ($action == 'insert') {
         }
 
         // Inserir no banco de dados
-        $sql = "INSERT INTO usuarios (nome_usuario, email, telefone, senha, tipo_contrato, tipo_usuario_id, codigo_acesso) 
-                VALUES ('$nome_usuario', '$email', '$telefone', '$senha', '$tipo_contrato', '$tipo_usuario_id', '$codigo_acesso')";
+        $sql = "INSERT INTO usuarios (nome_usuario, email, telefone, senha, tipo_contrato, tipo_usuario_id) 
+                VALUES ('$nome_usuario', '$email', '$telefone', '$senha', '$tipo_contrato', '$tipo_usuario_id')";
 
         if (mysqli_query($conn, $sql)) {
             header("Location: ../form/formUsuarios.php?status=success");
@@ -51,10 +51,10 @@ if ($action == 'insert') {
     $senha = isset($_POST['senha']) ? password_hash($_POST['senha'], PASSWORD_DEFAULT) : '';
     $tipo_contrato = isset($_POST['tipo_contrato']) ? $_POST['tipo_contrato'] : '';
     $tipo_usuario_id = isset($_POST['tipo_usuario_id']) ? $_POST['tipo_usuario_id'] : '';
-    $codigo_acesso = isset($_POST['codigo_acesso']) ? $_POST['codigo_acesso'] : '';
+    
 
     // Verificar se todos os campos obrigatórios estão preenchidos
-    if ($idUsuario && $nome_usuario && $email && $telefone && $senha && $tipo_contrato && $tipo_usuario_id && $codigo_acesso) {
+    if ($idUsuario && $nome_usuario && $email && $telefone && $senha && $tipo_contrato && $tipo_usuario_id) {
         // Verificar se o e-mail já está cadastrado para outro usuário
         $checkEmailQuery = "SELECT COUNT(*) AS total FROM usuarios WHERE email = '$email' AND idUsuario != '$idUsuario'";
         $result = mysqli_query($conn, $checkEmailQuery);
@@ -68,7 +68,7 @@ if ($action == 'insert') {
 
         // Atualizar no banco de dados
         $sql = "UPDATE usuarios SET nome_usuario='$nome_usuario', email='$email', telefone='$telefone', senha='$senha', 
-                tipo_contrato='$tipo_contrato', tipo_usuario_id='$tipo_usuario_id', codigo_acesso='$codigo_acesso' 
+                tipo_contrato='$tipo_contrato', tipo_usuario_id='$tipo_usuario_id' 
                 WHERE idUsuario='$idUsuario'";
 
         if (mysqli_query($conn, $sql)) {

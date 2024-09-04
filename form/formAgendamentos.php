@@ -342,7 +342,7 @@ $resultado = mysqli_query($conn, $sql);
                                         </div>
 
                                         <div class="mb-3">
-                                            <label for="usuario_idUsuario" class="form-label">Usuário</label>
+                                            <label for="usuario_idUsuario" class="form-label">Agenda</label>
                                             <select class="form-select" id="usuario_idUsuario" name="usuario_idUsuario" required>
                                                 <?php
                                                 $query = "SELECT idUsuario, nome_usuario FROM usuarios u JOIN tipo_usuario tu ON u.tipo_usuario_id = tu.idTipo_usuario WHERE tu.tipo = 'COPED'";

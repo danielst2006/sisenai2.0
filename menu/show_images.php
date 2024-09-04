@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="refresh" content="60">
+    <!-- <meta http-equiv="refresh" content="60"> -->
     <title>Exibição de Imagens e Lista de Turmas</title>
     <link rel="stylesheet" href="style01.css">
 </head>
