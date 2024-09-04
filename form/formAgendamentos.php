@@ -70,8 +70,9 @@ $sql = "SELECT a.idAgendamento, a.data_inicio, a.data_final, a.horario_inicio, a
            OR uc.nome_unidade LIKE CONCAT('%', '$pesquisa', '%') 
            OR t.nome_turma LIKE CONCAT('%', '$pesquisa', '%') 
            OR s.nome LIKE CONCAT('%', '$pesquisa', '%') 
-           OR p.nome LIKE CONCAT('%', '$pesquisa', '%'))
-           AND a.status = 'ATIVA'";
+           OR p.nome LIKE CONCAT('%', '$pesquisa', '%'))";
+
+           //AND a.status = 'ATIVA'
 
 if (!empty($professor_id)) {
     $sql .= " AND a.professor_id = '$professor_id'";

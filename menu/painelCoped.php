@@ -1,5 +1,4 @@
 <?php
-
 session_start();
 if (isset($_SESSION['login'])) {
     if ($_SESSION['tipo_usuario'] != "COPED" && $_SESSION['tipo_usuario'] != "ADM") {
@@ -15,118 +14,12 @@ if (isset($_SESSION['login'])) {
 include_once '../head/menu.php';
 include_once "../bd/conn.php";
 
+// Consulta para listar a quantidade de turmas nos turnos
+$quantidade_manha = 0;
+$quantidade_tarde = 0;
+$quantidade_noite = 0;
 
-?>
-
-<!DOCTYPE html>
-<html lang="pt-br">
-
-<head>
-    <!-- Inclua seu head aqui -->
-    <link rel="stylesheet" href="../css/style.css">
-    <style>
-        /* Adaptação para o Dashboard */
-        .dashboard-container {
-            display: left;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            padding: 50px;
-            margin-top: 30px;
-            margin-bottom: -98px;
-            /* Espaçamento adicional para não sobrepor o cabeçalho */
-        }
-
-        .live-classes,
-        .coordinator-classes {
-            width: 100%;
-            background-color: #fff;
-            padding: 20px;
-            box-shadow: 0 0 10px rgba(65, 105, 225);
-            border-radius: 20px;
-            margin-bottom: 45px;
-            /* Para espaçamento entre os blocos */
-        }
-
-        .stats-box {
-            width: 30%;
-            background-color: #f9f9f9;
-            padding: 10px;
-            box-shadow: 0 0 10px rgba(65, 105, 225);
-            border-radius: 20px;
-            text-align: center;
-            margin-bottom: 35px;
-            margin-top: 20px;
-            /* Para espaçamento entre os blocos */
-        }
-
-        .stats-inline {
-            display: inline-flex;
-            margin-top: 0 15 px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-        }
-
-        table,
-        th,
-        td {
-            border: 1px solid #ddd;
-            
-        }
-
-        th,
-        td {
-            text-align: left;
-            font-family: "Arial, Copperplate";
-        }
-
-        h1 {
-            text-align: left;
-            font-family: "Serif, Georgia";
-            font-size: 22px;
-            margin-top: 35px;
-        }
-
-        h2 {
-            text-align: center;
-            font-family: "Serif, Georgia";
-            font-size: 25px;
-            margin-top: 35px;
-        }
-
-        h4 {
-            text-align: center;
-            font-family: "Serif, Georgia";
-            font-size: 40px;
-            margin-top: 35px;
-            margin-bottom: 5px;
-        }
-
-        thead {
-            background-color: darkblue;
-        }
-
-        tbody tr:nth-child(even) {
-            background-color: #f1f1f1;
-        }
-    </style>
-</head>
-
-<body>
-
-    <?php
-
-    //Listar a quantidade de agendadmento de turmas nos três turnos os dados estão no banco de dados e os turno em horários diferentes manhã 08:00 as 12:00, tarde 13:00 as 18:00 e noite 19:00 as 22:00
-
-    $quantidade_manha = 0;
-    $quantidade_tarde = 0;
-    $quantidade_noite = 0;
-
-    // Consulta SQL para contar as turmas nos períodos de manhã, tarde e noite
-    $sql = "
+$sql = "
     SELECT 
         SUM(CASE 
             WHEN TIME(horario_inicio) BETWEEN '07:00:00' AND '12:00:00' 
@@ -162,85 +55,198 @@ include_once "../bd/conn.php";
             END, dias_aula) > 0;
 ";
 
-    // Executa a consulta usando mysqli_query
-    $result = mysqli_query($conn, $sql);
+$result = mysqli_query($conn, $sql);
 
-    if ($result && mysqli_num_rows($result) > 0) {
-        // Se houver resultado, obtém os valores
-        $row = mysqli_fetch_assoc($result);
-        $quantidade_manha = $row['quantidade_manha'] ?? 0;
-        $quantidade_tarde = $row['quantidade_tarde'] ?? 0;
-        $quantidade_noite = $row['quantidade_noite'] ?? 0;
-    }
+if ($result && mysqli_num_rows($result) > 0) {
+    $row = mysqli_fetch_assoc($result);
+    $quantidade_manha = $row['quantidade_manha'] ?? 0;
+    $quantidade_tarde = $row['quantidade_tarde'] ?? 0;
+    $quantidade_noite = $row['quantidade_noite'] ?? 0;
+}
 
-    // Calcula o total de turmas
-    $total_turmas = $quantidade_manha + $quantidade_tarde + $quantidade_noite;
+$total_turmas = $quantidade_manha + $quantidade_tarde + $quantidade_noite;
+?>
 
+<!DOCTYPE html>
+<html lang="pt-br">
 
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            background-color: #f4f7f9;
+            font-family: 'Arial', sans-serif;
+        }
 
+        .container {
+            margin-top: 20px;
+        }
 
-    ?>
+        .header-text {
+            margin-bottom: 40px;
+        }
 
-    <center>
-        <h4 style="color:darkblue;">Painel COPED</h4>
-    </center>
+        .card-custom {
+            border-radius: 20px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
 
-    <div class="dashboard-container">
-        <!-- Estatísticas -->
-        <div class="stats-box">
-            <h2 style="color:coral;">Total de Turmas no Período Atual</h2>
-            <h4 style="color:crimson">Manhã: <?php echo $quantidade_manha; ?></h4>
-            <h4 style="color:crimson">Tarde: <?php echo $quantidade_tarde; ?></h4>
-            <h4 style="color:crimson">Noite: <?php echo $quantidade_noite; ?></h4>
-        </div>
-        <div class="stats-box">
-            <h2 style="color:coral;">Turmas Acompanhadas p/ Coordenador</h2>
-            <h4 style="color:crimson">5</h4>
-        </div>
-        <div class="stats-box">
-            <h2 style="color:coral;">Turmas de Hoje</h2>
-            <h4 style="color:crimson"><?php echo $total_turmas;?></h4>
-            <!-- <h1 style="color:darkblue">Matutino</h1>
-                <h1 style="color:darkblue">Vespertino</h1>
-                <h1 style="color:darkblue">Noturno</h1> -->
+        .card-header-custom {
+            background-color: #343a40;
+            color: #ffffff;
+            border-radius: 20px 20px 0 0;
+            padding: 20px;
+        }
 
-        </div>
+        .card-body-custom {
+            padding: 30px;
+        }
 
-        <!-- Tabelas -->
-        <div class="live-classes">
-            <h2 style="color:darkblue;">Turmas ao Vivo</h2>
-            <table id="turma-table">
-                <thead>
-                <tr>
-                    
-                    <th>TEMA</th>
-                    <th>ÁREA</th>
-                    <th>SALA</th>
-                    <th>ANDAR</th>
-                    <th>RESPONSAVEL</th>
-                    <th>INÍCIO</th>
-                    <th>FIM</th>
-		    
-                </tr>
-                </thead>
-                <tbody id="turmas-body">
-                <!-- Conteúdo da tabela de turmas será inserido aqui via JavaScript -->
-                </tbody>
-            </table>
+        .display-4 {
+            font-weight: bold;
+        }
 
-            <script src="../menu/script.js"></script>
-        </div>
+        .text-danger {
+            color: #e74c3c !important;
+        }
 
-        <div class="coordinator-classes">
-            <h2 style="color:darkblue;">Turmas que o Coordenador Acompanha</h2>
-            <table>
+        .text-warning {
+            color: #f39c12 !important;
+        }
+
+        .text-info {
+            color: #3498db !important;
+        }
+
+        .table-container {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .table-container h2 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #343a40;
+        }
+
+        .table {
+            margin-bottom: 0;
+        }
+
+        .table thead {
+            background-color: #2c3e50;
+            color: #ffffff;
+        }
+
+        .table tbody tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        .table tbody tr:hover {
+            background-color: #e9ecef;
+        }
+
+        .icon-large {
+            font-size: 24px;
+            vertical-align: middle;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h4 class="text-center text-primary header-text">Painel COPED</h4>
+
+        <!-- Dashboard Stats -->
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card card-custom h-100 d-flex flex-column ">
+                    <div class="card-header-custom text-center">
+                        <i class="fas fa-chalkboard-teacher icon-large"></i> Total de Turmas
+                    </div>
+                    <div class="card-body card-body-custom text-center">
+                        <div class="row">
+                            <div class="col">
+                                <h5 class="text-secondary">Manhã</h5>
+                                <p class="display-4 text-danger"><?php echo $quantidade_manha; ?></p>
+                            </div>
+                            <div class="col">
+                                <h5 class="text-secondary">Tarde</h5>
+                                <p class="display-4 text-warning"><?php echo $quantidade_tarde; ?></p>
+                            </div>
+                            <div class="col">
+                                <h5 class="text-secondary">Noite</h5>
+                                <p class="display-4 text-info"><?php echo $quantidade_noite; ?></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card card-custom h-100 d-flex flex-column">
+                    <div class="card-header-custom text-center bg-success">
+                        <i class="fas fa-user-tie icon-large"></i> Minhas Turmas
+                    </div>
+                    <div class="card-body card-body-custom text-center">
+                        <p class="display-4 text-success">5</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card card-custom h-100 d-flex flex-column">
+                    <div class="card-header-custom text-center bg-warning">
+                        <i class="fas fa-calendar-day icon-large"></i> Turmas de Hoje
+                    </div>
+                    <div class="card-body card-body-custom text-center">
+                        <p class="display-4 text-warning"><?php echo $total_turmas; ?></p>
+                    </div>
+                </div>
+            </div>
+        </div> <br> <br>
+
+        <!-- Turmas ao Vivo -->
+        <div class="table-container">
+            <h2><i class="fas fa-video icon-large"></i> Turmas ao Vivo</h2>
+            <table class="table table-hover">
                 <thead>
                     <tr>
-                        <th style="color:white;">Turma</th>
-                        <th style="color:white;">Curso</th>
-                        <th style="color:white;">Professor</th>
-                        <th style="color:white;">Sala</th>
-                        <th style="color:white;">Status</th>
+                        <th>TEMA</th>
+                        <th>ÁREA</th>
+                        <th>SALA</th>
+                        <th>ANDAR</th>
+                        <th>RESPONSÁVEL</th>
+                        <th>INÍCIO</th>
+                        <th>FIM</th>
+                        <th>STATUS</th>
+                    </tr>
+                </thead>
+                <tbody id="turmas-body">
+                    <!-- Conteúdo da tabela de turmas será inserido aqui via JavaScript -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Turmas que o Coordenador Acompanha -->
+        <div class="table-container">
+            <h2><i class="fas fa-user-check icon-large"></i> Turmas que o Coordenador Acompanha</h2>
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Turma</th>
+                        <th>Curso</th>
+                        <th>Professor</th>
+                        <th>Sala</th>
+                        <th>Status</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -269,14 +275,15 @@ include_once "../bd/conn.php";
             </table>
         </div>
 
-        <div class="coordinator-classes">
-            <h2 style="color:darkblue;">Salas em Uso e Andares</h2>
-            <table>
+        <!-- Salas em Uso e Andares -->
+        <div class="table-container">
+            <h2><i class="fas fa-building icon-large"></i> Salas em Uso e Andares</h2>
+            <table class="table table-hover">
                 <thead>
                     <tr>
-                        <th style="color:white;">Sala</th>
-                        <th style="color:white;">Andar</th>
-                        <th style="color:white;">Cursos</th>
+                        <th>Sala</th>
+                        <th>Andar</th>
+                        <th>Cursos</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -294,6 +301,11 @@ include_once "../bd/conn.php";
             </table>
         </div>
     </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="../menu/scriptCoped.js"></script>
 </body>
 
 </html>
