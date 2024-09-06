@@ -11,6 +11,7 @@
     <span id="current-date" class="date"></span>
     <span id="current-time" class="time"></span>
     <img src="../imagens/senai.png" alt="Logo" class="logo">
+    <img src="../imagens/Fita+amarela.png" alt="Logo2" class="logo2">
 </div>
 
 <div class="main-content">
@@ -37,7 +38,7 @@
         </div>
     </div>
 
-    <div class="image-display-container"> -->
+    <div class="image-display-container">
         <?php
         $dir = "imagens/";
         $images = array_diff(scandir($dir), array('.', '..'));

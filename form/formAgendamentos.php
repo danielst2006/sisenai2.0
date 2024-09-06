@@ -41,7 +41,7 @@ $result_agendamento = "SELECT COUNT(*) AS total FROM agendamento a
                           OR t.nome_turma LIKE '%$pesquisa%' 
                           OR s.nome LIKE '%$pesquisa%' 
                           OR p.nome LIKE '%$pesquisa%')
-                          AND a.status = 'ATIVA'";
+                          ";
 
 // Se foi fornecida uma data de busca, adiciona a condição de intervalo de data
 if (!empty($data_busca)) {
@@ -77,7 +77,7 @@ $sql = "SELECT a.idAgendamento, a.data_inicio, a.data_final, a.horario_inicio, a
            OR t.nome_turma LIKE CONCAT('%', '$pesquisa', '%') 
            OR s.nome LIKE CONCAT('%', '$pesquisa', '%') 
            OR p.nome LIKE CONCAT('%', '$pesquisa', '%'))
-           AND a.status = 'ATIVA'";
+           ";
 
 // Se foi fornecida uma data de busca, adiciona a condição de intervalo de data
 if (!empty($data_busca)) {

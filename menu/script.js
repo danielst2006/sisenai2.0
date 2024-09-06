@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchTurmas(); // Carrega as turmas ao iniciar a página
     setInterval(fetchTurmas, 60000); // Atualiza as turmas a cada 60 segundos (60000 ms)
     setInterval(atualizarTempo, 1000); // Atualiza o relógio a cada segundo (1000 ms)
-    setInterval(alternarPagina, 20000); // Alterna a página a cada 20 segundos (20000 ms)
+    setInterval(alternarPagina, 10000); // Alterna a página a cada 20 segundos (20000 ms)
 });
 
 let registrosPorPagina = 4;
