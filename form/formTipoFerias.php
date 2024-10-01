@@ -2,9 +2,7 @@
 
 session_start();
 if (isset($_SESSION['login'])) {
-    if ($_SESSION['tipo_usuario'] == "COPED" || $_SESSION['tipo_usuario'] == "ADM") {
-        // Usuário autenticado e autorizado
-    } else {
+    if ($_SESSION['tipo_usuario'] != "COPED" && $_SESSION['tipo_usuario'] != "ADM") {
         header('Location: ../form/menu.php');
         exit();
     }
@@ -18,27 +16,22 @@ include_once '../head/menu.php';
 include_once "../bd/conn.php";
 
 // Inicializa variáveis
-$pesquisa = isset($_POST['busca']) ? $_POST['busca'] : '';
+$pesquisa = isset($_POST['busca']) ? mysqli_real_escape_string($conn, $_POST['busca']) : '';
 
 // Paginação
 $pagina = isset($_GET['pagina']) ? intval($_GET['pagina']) : 1;
 $quantidade_pg = 5;
 $inicio = ($quantidade_pg * $pagina) - $quantidade_pg;
 
-// Prepara e executa consulta para contar o total de registros
-$stmt = $conn->prepare("SELECT COUNT(*) AS total FROM tipo_ferias WHERE tipo LIKE ?");
-$search_param = "%$pesquisa%";
-$stmt->bind_param("s", $search_param);
-$stmt->execute();
-$result = $stmt->get_result();
-$total_tipo = $result->fetch_assoc()['total'];
+// Consulta para contar o total de registros
+$sql_total = "SELECT COUNT(*) AS total FROM tipo_ferias WHERE tipo LIKE '%$pesquisa%'";
+$result = mysqli_query($conn, $sql_total);
+$total_tipo = mysqli_fetch_assoc($result)['total'];
 $num_pagina = ceil($total_tipo / $quantidade_pg);
 
-// Prepara e executa consulta para buscar os tipos de férias
-$stmt = $conn->prepare("SELECT id_tipoferias, tipo FROM tipo_ferias WHERE tipo LIKE ? LIMIT ?, ?");
-$stmt->bind_param("sii", $search_param, $inicio, $quantidade_pg);
-$stmt->execute();
-$resultado = $stmt->get_result();
+// Consulta para buscar os tipos de férias com paginação
+$sql = "SELECT id_tipoferias, tipo FROM tipo_ferias WHERE tipo LIKE '%$pesquisa%' LIMIT $inicio, $quantidade_pg";
+$resultado = mysqli_query($conn, $sql);
 
 ?>
 
@@ -50,145 +43,145 @@ $resultado = $stmt->get_result();
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>Cadastro de Tipos de Férias</title>
     <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/css/bootstrap.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Ajusta a largura das colunas */
+        .table th:nth-child(1),
+        .table td:nth-child(1) {
+            width: 20%;
+        }
+
+        .table th:nth-child(2),
+        .table td:nth-child(2) {
+            width: 60%;
+        }
+
+        .table th:nth-child(3),
+        .table td:nth-child(3) {
+            width: 20%;
+        }
+
+        .action-button {
+            width: 30px;
+            height: 30px;
+            padding: 5px;
+            text-align: center;
+        }
+    </style>
 </head>
 
 <body class="bg-light text-dark">
 
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-12">
-                <h1 class="text-center">Tipos de Férias</h1>
-                <div style="overflow-x:auto;">
-                    <div class="pesquisa">
-                        <form action="formTipoFerias.php" method="post" class="mb-4">
-                            <div class="input-group input-group-sm" style="max-width: 300px;">
-                                <input type="search" class="form-control" placeholder="Pesquisar" id="pesquisar" name="busca" value="<?= htmlspecialchars($pesquisa); ?>">
-                                <div class="input-group-append">
-                                    <button type="submit" class="btn btn-primary btn-sm">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
-                                            <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0" />
-                                        </svg>
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">Cadastro de Tipos de Férias</h1>
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <!-- Formulário de Pesquisa -->
+            <form class="d-flex" action="formTipoFerias.php" method="POST">
+                <input class="form-control me-2" type="search" name="busca" placeholder="Pesquisar por tipo" value="<?= htmlspecialchars($pesquisa); ?>">
+                <button class="btn btn-outline-success" type="submit">Pesquisar</button>
+            </form>
+
+            <!-- Botão para abrir o modal de adição de novo tipo de férias -->
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal" onclick="clearForm()">Adicionar Novo Tipo</button>
+        </div>
+
+        <!-- Tabela de tipos de férias -->
+        <table class="table table-bordered table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th class="text-center">Código</th>
+                    <th class="text-center">Tipo de Férias</th>
+                    <th class="text-center">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php
+                if (mysqli_num_rows($resultado) > 0) {
+                    while ($row = mysqli_fetch_assoc($resultado)) {
+                ?>
+                        <tr>
+                            <td class='text-center'><?= htmlspecialchars($row['id_tipoferias']); ?></td>
+                            <td class='text-center'><?= htmlspecialchars($row['tipo']); ?></td>
+                            <td class='text-center'>
+                                <div class='d-flex justify-content-center'>
+                                    <!-- Botão de edição -->
+                                    <button class="btn btn-warning me-2 action-button" data-bs-toggle="modal" data-bs-target="#exampleModal" onclick='editTipo(<?= json_encode($row); ?>)'>
+                                        <i class="fas fa-pencil-alt"></i>
                                     </button>
+
+                                    <!-- Formulário de exclusão -->
+                                    <form action='../controls/cadastrarTipoFerias.php' method='POST' style='display:inline-block;'>
+                                        <input type="hidden" name="id_tipoferias" value="<?= htmlspecialchars($row['id_tipoferias']); ?>">
+                                        <input type="hidden" name="action" value="delete">
+                                        <button type="submit" class="btn btn-danger action-button" onclick="return confirm('Tem certeza que deseja excluir este tipo de férias?')">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </form>
                                 </div>
+                            </td>
+                        </tr>
+                <?php
+                    }
+                } else {
+                ?>
+                    <tr>
+                        <td colspan="3" class="text-center">Nenhum tipo de férias encontrado</td>
+                    </tr>
+                <?php
+                }
+                ?>
+            </tbody>
+        </table>
+
+        <!-- Paginação -->
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                <li class="page-item <?= $pagina <= 1 ? 'disabled' : ''; ?>">
+                    <a class="page-link" href="<?= $pagina > 1 ? 'formTipoFerias.php?pagina=' . ($pagina - 1) : '#'; ?>" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                <?php for ($i = 1; $i <= $num_pagina; $i++) { ?>
+                    <li class="page-item <?= $pagina == $i ? 'active' : ''; ?>"><a class="page-link" href="formTipoFerias.php?pagina=<?= $i; ?>"><?= $i; ?></a></li>
+                <?php } ?>
+                <li class="page-item <?= $pagina >= $num_pagina ? 'disabled' : ''; ?>">
+                    <a class="page-link" href="<?= $pagina < $num_pagina ? 'formTipoFerias.php?pagina=' . ($pagina + 1) : '#'; ?>" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Modal para adicionar/editar tipo de férias -->
+        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Adicionar Novo Tipo de Férias</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        <form id="tipoFeriasForm" action="../controls/cadastrarTipoFerias.php" method="POST">
+                            <input type="hidden" id="id_tipoferias" name="id_tipoferias">
+                            <input type="hidden" id="action" name="action" value="add">
+
+                            <div class="mb-3">
+                                <label for="tipo" class="form-label">Tipo de Férias</label>
+                                <input type="text" class="form-control" id="tipo" name="tipo" required>
                             </div>
                         </form>
+                    </div>
 
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <div class="flex-grow-1">
-                                <?php
-                                if (isset($_GET['status'])) {
-                                    if ($_GET['status'] == 'success') {
-                                        echo '<div id="alertBox" class="alert alert-success mb-0" style="display: inline-block" role="alert">Operação realizada com sucesso!</div>';
-                                    } else if ($_GET['status'] == 'error') {
-                                        echo '<div id="alertBox" class="alert alert-danger mb-0" style="display: inline-block" role="alert">Erro ao realizar a operação</div>';
-                                    }
-                                }
-                                ?>
-                            </div>
-
-                            <script>
-                                setTimeout(function() {
-                                    var alertBox = document.getElementById('alertBox');
-                                    if (alertBox) {
-                                        alertBox.style.display = 'none';
-                                    }
-                                }, 5000);
-                            </script>
-
-                            <div>
-                                <button class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#exampleModal" onclick="clearForm()">Adicionar Novo Tipo</button>
-                                <a href="formFerias.php" class="btn btn-secondary">Férias</a>
-                            </div>
-                        </div>
-
-                        <table class='table rounded-table'>
-                            <thead>
-                                <tr>
-                                    <th class="text-center">Código</th>
-                                    <th class="text-center">Tipo de Férias</th>
-                                    <th class="text-center">Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php
-                                if ($resultado->num_rows > 0) {
-                                    while ($row = $resultado->fetch_assoc()) {
-                                ?>
-                                        <tr>
-                                            <td class='text-center'><?= htmlspecialchars($row['id_tipoferias']); ?></td>
-                                            <td class='text-center'><?= htmlspecialchars($row['tipo']); ?></td>
-                                            <td class='text-center'>
-                                                <div class='d-flex justify-content-center'>
-                                                    <button class='btn action-button edit-button me-2' data-bs-toggle='modal' data-bs-target='#exampleModal' onclick='editTipo(<?= json_encode($row); ?>)'><i class='fas fa-pencil-alt'></i></button>
-                                                    <form action='../controls/cadastrarTipoFerias.php' method='POST' style='display:inline-block;'>
-                                                        <input type='hidden' name='id_tipoferias' value='<?= htmlspecialchars($row['id_tipoferias']); ?>'>
-                                                        <input type='hidden' name='action' value='delete'>
-                                                        <button type='submit' class='btn action-button delete-button' onclick='return confirm("Tem certeza que deseja excluir este tipo de férias?")'><i class='fas fa-times'></i></button>
-                                                    </form>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    <?php
-                                    }
-                                } else {
-                                    ?>
-                                    <tr>
-                                        <td colspan='3'>Nenhum tipo de férias encontrado</td>
-                                    </tr>
-                                <?php
-                                }
-                                ?>
-                            </tbody>
-                        </table>
-
-                        <nav aria-label="Page navigation">
-                            <ul class="pagination justify-content-center">
-                                <li class="page-item <?= $pagina <= 1 ? 'disabled' : ''; ?>">
-                                    <a class="page-link" href="<?= $pagina > 1 ? 'formTipoFerias.php?pagina=' . ($pagina - 1) : '#'; ?>" aria-label="Previous">
-                                        <span aria-hidden="true">&laquo;</span>
-                                    </a>
-                                </li>
-                                <?php for ($i = 1; $i <= $num_pagina; $i++) { ?>
-                                    <li class="page-item <?= $pagina == $i ? 'active' : ''; ?>"><a class="page-link" href="formTipoFerias.php?pagina=<?= $i; ?>"><?= $i; ?></a></li>
-                                <?php } ?>
-                                <li class="page-item <?= $pagina >= $num_pagina ? 'disabled' : ''; ?>">
-                                    <a class="page-link" href="<?= $pagina < $num_pagina ? 'formTipoFerias.php?pagina=' . ($pagina + 1) : '#'; ?>" aria-label="Next">
-                                        <span aria-hidden="true">&raquo;</span>
-                                    </a>
-                                </li>
-                            </ul>
-                        </nav>
-
-                        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                            <div class="modal-dialog">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title" id="exampleModalLabel">Adicionar Novo Tipo de Férias</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                    </div>
-                                    <div class="modal-body">
-                                        <form id="tipoFeriasForm" action="../controls/cadastrarTipoFerias.php" method="POST">
-                                            <input type="hidden" id="id_tipoferias" name="id_tipoferias">
-                                            <input type="hidden" id="action" name="action" value="add">
-                                            <div class="mb-3">
-                                                <label for="tipo" class="form-label">Tipo de Férias</label>
-                                                <input type="text" class="form-control" id="tipo" name="tipo" required>
-                                            </div>
-                                        </form>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-                                        <button type="button" class="btn btn-primary" onclick="submitForm()">Salvar</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                        <button type="button" class="btn btn-primary" onclick="submitForm()">Salvar</button>
                     </div>
                 </div>
             </div>
         </div>
+
     </div>
 
     <!-- Bootstrap JS and dependencies -->

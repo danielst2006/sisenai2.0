@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setInterval(alternarPagina, 10000); // Alterna a página a cada 20 segundos (20000 ms)
 });
 
-let registrosPorPagina = 4;
+let registrosPorPagina = 5;
 let paginaAtual = 0;
 let turmas = [];
 let turmasFiltradas = [];

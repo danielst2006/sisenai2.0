@@ -1,7 +1,9 @@
 <?php
 session_start();
+
 if (isset($_SESSION['login'])) {
     if ($_SESSION['tipo_usuario'] == "COPED" || $_SESSION['tipo_usuario'] == "ADM") {
+        // Usuário autorizado
     } else {
         header('Location: ../form/menu.php');
         exit;
@@ -15,11 +17,8 @@ if (isset($_SESSION['login'])) {
 include_once '../head/menu.php';
 include_once "../bd/conn.php";
 
-if (isset($_POST['busca'])) {
-    $pesquisa = $_POST['busca'];
-} else {
-    $pesquisa = '';
-}
+// Verifica se foi realizada uma pesquisa
+$pesquisa = isset($_POST['busca']) ? $_POST['busca'] : '';
 
 // Paginação
 $pagina = isset($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
@@ -27,10 +26,7 @@ $quantidade_pg = 10;
 $inicio = ($quantidade_pg * $pagina) - $quantidade_pg;
 
 // Consulta para contar o total de registros
-$result_curso = "SELECT COUNT(*) AS total FROM cursos 
-                 WHERE nome_curso LIKE ? 
-                    OR area_tecnologica LIKE ? 
-                    OR ano LIKE ?";
+$result_curso = "SELECT COUNT(*) AS total FROM cursos WHERE nome_curso LIKE ? OR area_tecnologica LIKE ? OR ano LIKE ?";
 $stmt = $conn->prepare($result_curso);
 $pesquisa_like = "%$pesquisa%";
 $stmt->bind_param('sss', $pesquisa_like, $pesquisa_like, $pesquisa_like);
@@ -39,25 +35,12 @@ $consulta = $stmt->get_result();
 $total_curso = $consulta->fetch_assoc()['total'];
 $num_pagina = ceil($total_curso / $quantidade_pg);
 
-// Consulta para buscar os cursos com limitação de registros
-$sql = "SELECT curso_id, nome_curso, area_tecnologica, ano 
-FROM cursos 
-WHERE nome_curso LIKE ? 
-   OR area_tecnologica LIKE ? 
-   OR ano LIKE ? 
-LIMIT $inicio, $quantidade_pg";
+// Consulta para buscar os cursos
+$sql = "SELECT curso_id, nome_curso, area_tecnologica, ano FROM cursos WHERE nome_curso LIKE ? OR area_tecnologica LIKE ? OR ano LIKE ? LIMIT $inicio, $quantidade_pg";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param('sss', $pesquisa_like, $pesquisa_like, $pesquisa_like);
 $stmt->execute();
 $resultado = $stmt->get_result();
-
-// Consulta para buscar todos os cursos para o select
-$sql_cursos = "SELECT nome_curso FROM cursos ORDER BY nome_curso ASC";
-$result_cursos = mysqli_query($conn, $sql_cursos);
-
-if ($result_cursos === false) {
-    die("Erro na consulta: " . mysqli_error($conn));
-}
 ?>
 
 <!DOCTYPE html>
@@ -67,217 +50,151 @@ if ($result_cursos === false) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>Cadastro de Cursos</title>
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/css/bootstrap.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .table th:nth-child(1), .table td:nth-child(1) { width: 10%; }
+        .table th:nth-child(2), .table td:nth-child(2) { width: 50%; }
+        .table th:nth-child(3), .table td:nth-child(3) { width: 20%; }
+        .table th:nth-child(4), .table td:nth-child(4) { width: 10%; }
+        .action-button { width: 30px; height: 30px; padding: 5px; text-align: center; }
+    </style>
 </head>
 
 <body class="bg-light text-dark">
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">Cadastro de Cursos</h1>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <form class="d-flex" action="formCurso.php" method="POST">
+                <input class="form-control me-2" type="search" name="busca" placeholder="Pesquisar por nome, área ou ano" value="<?= htmlspecialchars($pesquisa); ?>">
+                <button class="btn btn-outline-success" type="submit">Pesquisar</button>
+            </form>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal" onclick="clearForm()">Adicionar Novo Curso</button>
+        </div>
 
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-12">
-                <h1 class="text-center">Cursos</h1>
-                <div style="overflow-x:auto;">
-                    <div class="pesquisa">
-                        <form action="formCurso.php" method="post" class="mb-4">
-                            <div class="input-group input-group-sm" style="max-width: 300px;">
-                                <input type="search" class="form-control" placeholder="Pesquisar" id="pesquisar" name="busca">
-                                <div class="input-group-append">
-                                    <button type="submit" class="btn btn-primary btn-sm">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
-                                            <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0" />
-                                        </svg>
+        <table class="table table-bordered table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th class="text-center">Código</th>
+                    <th class="text-center">Nome do Curso</th>
+                    <th class="text-center">Área Tecnológica</th>
+                    <th class="text-center">Ano</th>
+                    <th class="text-center">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php if ($resultado->num_rows > 0): ?>
+                    <?php while ($row = $resultado->fetch_assoc()): ?>
+                        <tr>
+                            <td class="text-center"><?= htmlspecialchars($row['curso_id']); ?></td>
+                            <td class="text-center"><?= htmlspecialchars($row['nome_curso']); ?></td>
+                            <td class="text-center"><?= htmlspecialchars($row['area_tecnologica']); ?></td>
+                            <td class="text-center"><?= htmlspecialchars($row['ano']); ?></td>
+                            <td class="text-center">
+                                <div class="d-flex justify-content-center">
+                                    <button class="btn btn-warning me-2 action-button" data-bs-toggle="modal" data-bs-target="#exampleModal" onclick='editCurso(<?= json_encode($row); ?>)'>
+                                        <i class="fas fa-pencil-alt"></i>
                                     </button>
+                                    <form action="../controls/cadastrarCurso.php" method="POST" style="display:inline-block;">
+                                        <input type="hidden" name="curso_id" value="<?= htmlspecialchars($row['curso_id']); ?>">
+                                        <input type="hidden" name="action" value="delete">
+                                        <button type="submit" class="btn btn-danger action-button" onclick="return confirm('Tem certeza que deseja excluir este curso?')">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </form>
                                 </div>
+                            </td>
+                        </tr>
+                    <?php endwhile; ?>
+                <?php else: ?>
+                    <tr>
+                        <td colspan="5" class="text-center">Nenhum curso encontrado</td>
+                    </tr>
+                <?php endif; ?>
+            </tbody>
+        </table>
+
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                <li class="page-item <?= ($pagina <= 1) ? 'disabled' : ''; ?>">
+                    <a class="page-link" href="<?= ($pagina > 1) ? 'formCurso.php?pagina=' . ($pagina - 1) : '#'; ?>" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                <?php for ($i = 1; $i <= $num_pagina; $i++): ?>
+                    <li class="page-item <?= ($pagina == $i) ? 'active' : ''; ?>">
+                        <a class="page-link" href="formCurso.php?pagina=<?= $i; ?>"><?= $i; ?></a>
+                    </li>
+                <?php endfor; ?>
+                <li class="page-item <?= ($pagina >= $num_pagina) ? 'disabled' : ''; ?>">
+                    <a class="page-link" href="<?= ($pagina < $num_pagina) ? 'formCurso.php?pagina=' . ($pagina + 1) : '#'; ?>" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Modal para adicionar/editar cursos -->
+        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Adicionar Novo Curso</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="cursoForm" action="../controls/cadastrarCurso.php" method="POST">
+                            <input type="hidden" id="curso_id" name="curso_id">
+                            <input type="hidden" id="action" name="action" value="add">
+                            <div class="mb-3">
+                                <label for="nome_curso" class="form-label">Nome do Curso</label>
+                                <input type="text" class="form-control" id="nome_curso" name="nome_curso" required>
                             </div>
+                            <div class="mb-3">
+                                <label for="area_tecnologica" class="form-label">Área Tecnológica</label>
+                                <select class="form-select" id="area_tecnologica" name="area_tecnologica" required>
+                                    <option value="AUTOMAÇÃO">AUTOMAÇÃO</option>
+                                    <option value="ELETROELETRÔNICA">ELETROELETRÔNICA</option>
+                                    <option value="ALIMENTOS E BEBIDAS">ALIMENTOS E BEBIDAS</option>
+                                    <option value="BIOCOMBUSTÍVEIS">BIOCOMBUSTÍVEIS</option>
+                                    <option value="CONSTRUÇÃO CIVIL">CONSTRUÇÃO CIVIL</option>
+                                    <option value="ENERGIA">ENERGIA</option>
+                                    <!-- Outras opções aqui -->
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="ano" class="form-label">Ano</label>
+                                <input type="number" class="form-control" id="ano" name="ano" min="1900" max="2100" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Salvar</button>
                         </form>
-
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <div class="flex-grow-1">
-                                <?php
-                                // Exibe uma mensagem de sucesso ou erro com base no parâmetro de status na URL
-                                if (isset($_GET['status'])) {
-                                    if ($_GET['status'] == 'success') {
-                                        echo '<div id="alertBox" class="alert alert-success mb-0" style="display: inline-block" role="alert">Operação realizada com sucesso!</div>';
-                                    } else if ($_GET['status'] == 'error') {
-                                        echo '<div id="alertBox" class="alert alert-danger mb-0" style="display: inline-block" role="alert">Erro ao realizar a operação</div>';
-                                    }
-                                }
-                                ?>
-                            </div>
-
-                            <script>
-                                // Esconde a mensagem de alerta após 5 segundos
-                                setTimeout(function() {
-                                    var alertBox = document.getElementById('alertBox');
-                                    if (alertBox) {
-                                        alertBox.style.display = 'none';
-                                    }
-                                }, 5000); // 5000 ms = 5 segundos
-                            </script>
-
-                            <div>
-                                <!-- Botão para abrir o modal de adição de novos cursos -->
-                                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal" onclick="clearForm()">Adicionar Novo Curso</button>
-                            </div>
-                        </div>
-
-                        <!-- Tabela de cursos -->
-                        <table class='table rounded-table'>
-                            <thead>
-                                <tr>
-                                    <th class="text-center">Código</th>
-                                    <th class="text-center">Nome do Curso</th>
-                                    <th class="text-center">Área Tecnológica</th>
-                                    <th class="text-center">Ano</th>
-                                    <th class="text-center">Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php
-                                // Verifica se há cursos e exibe cada um em uma linha da tabela
-                                if (mysqli_num_rows($resultado) > 0) {
-                                    while ($row = mysqli_fetch_assoc($resultado)) {
-                                ?>
-                                        <tr>
-                                            <td class='text-center'><?= htmlspecialchars($row['curso_id']); ?></td>
-                                            <td class='text-center'><?= htmlspecialchars($row['nome_curso']); ?></td>
-                                            <td class='text-center'><?= htmlspecialchars($row['area_tecnologica']); ?></td>
-                                            <td class='text-center'><?= htmlspecialchars($row['ano']); ?></td>
-                                            <td class='text-center'>
-                                                <div class='d-flex justify-content-center'>
-                                                    <!-- Botão de edição -->
-                                                    <button class='btn action-button edit-button me-2' data-bs-toggle='modal' data-bs-target='#exampleModal' onclick='editCurso(<?= json_encode($row); ?>)'><i class='fas fa-pencil-alt'></i></button>
-
-                                                    <!-- Formulário de exclusão -->
-                                                    <form action='../controls/cadastrarCurso.php' method='POST' style='display:inline-block;'>
-                                                        <input type='hidden' name='curso_id' value='<?= htmlspecialchars($row['curso_id']); ?>'>
-                                                        <input type='hidden' name='action' value='delete'>
-
-                                                        <!-- Botão de exclusão com confirmação -->
-                                                        <button type='submit' class='btn action-button delete-button' onclick='return confirm("Tem certeza que deseja excluir este curso?")'><i class='fas fa-times'></i></button>
-                                                    </form>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    <?php
-                                    }
-                                } else {
-                                    ?>
-                                    <!-- Mensagem quando não há cursos -->
-                                    <tr>
-                                        <td colspan='5'>Nenhum curso encontrado</td>
-                                    </tr>
-                                <?php
-                                }
-                                ?>
-                            </tbody>
-                        </table>
-
-                        <nav aria-label="Page navigation">
-                            <ul class="pagination justify-content-center">
-                                <li class="page-item <?php echo ($pagina <= 1) ? 'disabled' : ''; ?>">
-                                    <a class="page-link" href="<?php echo ($pagina > 1) ? 'formCurso.php?pagina=' . ($pagina - 1) : '#'; ?>" aria-label="Previous">
-                                        <span aria-hidden="true">&laquo;</span>
-                                    </a>
-                                </li>
-                                <?php for ($i = 1; $i <= $num_pagina; $i++) { ?>
-                                    <li class="page-item <?php echo ($pagina == $i) ? 'active' : ''; ?>"><a class="page-link" href="formCurso.php?pagina=<?php echo $i; ?>"><?php echo $i; ?></a></li>
-                                <?php } ?>
-                                <li class="page-item <?php echo ($pagina >= $num_pagina) ? 'disabled' : ''; ?>">
-                                    <a class="page-link" href="<?php echo ($pagina < $num_pagina) ? 'formCurso.php?pagina=' . ($pagina + 1) : '#'; ?>" aria-label="Next">
-                                        <span aria-hidden="true">&raquo;</span>
-                                    </a>
-                                </li>
-                            </ul>
-                        </nav>
-
-                        <!-- Modal para adicionar/editar cursos -->
-                        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                            <div class="modal-dialog">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title" id="exampleModalLabel">Adicionar Novo Curso</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                    </div>
-
-                                    <div class="modal-body">
-                                        <form id="cursoForm" action="../controls/cadastrarCurso.php" method="POST">
-                                            <input type="hidden" id="curso_id" name="curso_id">
-                                            <input type="hidden" id="action" name="action" value="add">
-
-                                            <div class="mb-3">
-                                                <label for="nome_curso" class="form-label">Nome do Curso</label>
-                                                <input type="text" class="form-control" id="nome_curso" name="nome_curso" required>
-                                            </div>
-
-                                            <div class="mb-3">
-                                                <label for="area_tecnologica" class="form-label">Área Tecnológica</label>
-                                                <select class="form-select" id="area_tecnologica" name="area_tecnologica" required>
-                                                    <option value="ALIMENTOS E BEBIDAS">ALIMENTOS E BEBIDAS</option>
-                                                    <option value="AUTOMAÇÃO">AUTOMAÇÃO</option>
-                                                    <option value="AUTOMOTIVA">AUTOMOTIVA</option>
-                                                    <option value="BIOCOMBUSTÍVEIS">BIOCOMBUSTÍVEIS</option>
-                                                    <option value="CONSTRUÇÃO CIVIL">CONSTRUÇÃO CIVIL</option>
-                                                    <option value="EDUCAÇÃO">EDUCAÇÃO</option>
-                                                    <option value="ELETROELETRÔNICA">ELETROELETRÔNICA</option>
-                                                    <option value="ENERGIA">ENERGIA</option>
-                                                    <option value="GESTÃO">GESTÃO</option>
-                                                    <option value="GRÁFICA E EDITORIAL">GRÁFICA E EDITORIAL</option>
-                                                    <option value="LOGÍSTICA">LOGÍSTICA</option>
-                                                    <option value="MADEIRA E MOBILIÁRIO">MADEIRA E MOBILIÁRIO</option>
-                                                    <option value="MEIO AMBIENTE">MEIO AMBIENTE</option>
-                                                    <option value="METALMECÂNICA">METALMECÂNICA</option>
-                                                    <option value="QUÍMICA">QUÍMICA</option>
-                                                    <option value="REFRIGERAÇÃO E CLIMATIZAÇÃO">REFRIGERAÇÃO E CLIMATIZAÇÃO</option>
-                                                    <option value="SEGURANÇA DO TRABALHO">SEGURANÇA DO TRABALHO</option>
-                                                    <option value="TECNOLOGIA DA INFORMAÇÃO">TECNOLOGIA DA INFORMAÇÃO</option>
-                                                    <option value="TELECOMUNICAÇÕES">TELECOMUNICAÇÕES</option>
-                                                    <option value="VESTUÁRIO">VESTUÁRIO</option>
-                                                </select>
-                                            </div>
-
-                                            <div class="mb-3">
-                                                <label for="ano" class="form-label">Ano</label>
-                                                <input type="number" min="1900" max="2100" class="form-control" id="ano" name="ano" required>
-                                            </div>
-
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                                                <button type="submit" class="btn btn-primary">Salvar</button>
-                                            </div>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- Fim do Modal -->
-
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Script para limpar o formulário ao abrir o modal -->
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
     <script>
         function clearForm() {
-            document.getElementById("cursoForm").reset();
-            document.getElementById("action").value = "add";
+            document.getElementById('cursoForm').reset();
+            document.getElementById('action').value = 'add';
+            document.getElementById('exampleModalLabel').innerText = 'Adicionar Novo Curso';
         }
 
         function editCurso(curso) {
-            document.getElementById("curso_id").value = curso.curso_id;
-            document.getElementById("nome_curso").value = curso.nome_curso;
-            document.getElementById("area_tecnologica").value = curso.area_tecnologica;
-            document.getElementById("ano").value = curso.ano;
-            document.getElementById("action").value = "update";
-            document.getElementById("exampleModalLabel").innerText = "Editar Curso";
+            document.getElementById('curso_id').value = curso.curso_id;
+            document.getElementById('nome_curso').value = curso.nome_curso;
+            document.getElementById('area_tecnologica').value = curso.area_tecnologica;
+            document.getElementById('ano').value = curso.ano;
+            document.getElementById('action').value = 'update';
+            document.getElementById('exampleModalLabel').innerText = 'Atualizar Curso';
         }
     </script>
-
-    <!-- Bootstrap JS -->
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 </body>
 
 <?php mysqli_close($conn); ?>

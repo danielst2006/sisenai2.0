@@ -1,18 +1,17 @@
 <?php
-
 session_start();
 
-if(isset($_SESSION['login'])){
-    if($_SESSION['tipo_usuario'] == "COPED" || $_SESSION['tipo_usuario'] == "ADM"){
-
+if (isset($_SESSION['login'])) {
+    if ($_SESSION['tipo_usuario'] == "COPED" || $_SESSION['tipo_usuario'] == "ADM") {
+        // Usuário autorizado
     } else {
         header('Location: ../form/menu.php');
+        exit;
     }
 } else {
     header('Location: ../form/login.php');
+    exit;
 }
-
-
 
 // Inclui o arquivo de menu
 include_once '../head/menu.php';
@@ -26,164 +25,182 @@ include_once '../head/menu.php';
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>Cadastro de Andar</title>
     <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/css/bootstrap.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Ajusta a largura das colunas */
+        .table th:nth-child(1),
+        .table td:nth-child(1) {
+            width: 15%;
+        }
+
+        .table th:nth-child(2),
+        .table td:nth-child(2) {
+            width: 70%;
+        }
+
+        .table th:nth-child(3),
+        .table td:nth-child(3) {
+            width: 15%;
+        }
+
+        .action-button {
+            width: 30px;
+            height: 30px;
+            padding: 5px;
+            text-align: center;
+        }
+    </style>
 </head>
 
 <body class="bg-light text-dark">
 
-    <div class="container">
+    <div class="container mt-5">
         <div class="row">
             <div class="col-lg-12">
-                <h1 class="text-center">Andar</h1>
-                <div style="overflow-x:auto;">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <div class="flex-grow-1">
-                            <?php
-                            // Exibe uma mensagem de sucesso ou erro com base no parâmetro de status na URL
-                            if (isset($_GET['status'])) {
-                                if ($_GET['status'] == 'success') {
-                                    echo '<div id="alertBox" class="alert alert-success mb-0" style="display: inline-block" role="alert">Operação realizada com sucesso!</div>';
-                                } else if ($_GET['status'] == 'error') {
-                                    echo '<div id="alertBox" class="alert alert-danger mb-0" style="display: inline-block" role="alert">Erro ao realizar a operação</div>';
-                                }
-                            }
-                            ?>
-                        </div>
+                <h1 class="text-center mb-4">Cadastro de Andar</h1>
 
-                        <script>
-                            // Esconde a mensagem de alerta após 5 segundos
-                            setTimeout(function() {
-                                var alertBox = document.getElementById('alertBox');
-                                if (alertBox) {
-                                    alertBox.style.display = 'none';
-                                }
-                            }, 5000); // 5000 ms = 5 segundos
-                        </script>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <!-- Formulário de Pesquisa -->
+                    <form class="d-flex" action="formAndar.php" method="GET">
+                        <input class="form-control me-2" type="search" name="search" placeholder="Pesquisar por nome ou código" aria-label="Search" value="<?php echo isset($_GET['search']) ? htmlspecialchars($_GET['search']) : ''; ?>">
+                        <button class="btn btn-outline-success" type="submit">Pesquisar</button>
+                    </form>
 
+                    <!-- Botão para abrir o modal de adição de novo andar -->
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal" onclick="clearForm()">Adicionar Novo Andar</button>
+                </div>
 
-                        <div>
-                            <!-- Botão para abrir o modal de adição de novo andar -->
-                            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal" onclick="clearForm()">Adicionar Novo Andar</button>
-                        </div>
-                    </div>
+                <!-- Tabela de andares -->
+                <table class="table table-bordered table-striped">
+                    <thead class="table-dark">
+                        <tr>
+                            <th class="text-center">Código</th>
+                            <th class="text-center">Nome</th>
+                            <th class="text-center">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php
+                        include_once '../bd/conn.php';
 
-                    <!-- Tabela de andares -->
-                    <table class='table rounded-table'>
-                        <thead>
-                            <tr>
-                                <th class="text-center">Código</th>
-                                <th class="text-center">Nome</th>
-                                <th class="text-center">Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php
-                            // Conexão com o banco de dados
-                            include_once '../bd/conn.php';
+                        // Verifica a conexão com o banco de dados
+                        if (!$conn) {
+                            die("Erro na conexão com o banco de dados: " . mysqli_connect_error());
+                        }
 
-                            // Definindo quantos registros por página
-                            $registros_por_pagina = 5;
+                        $registros_por_pagina = 5;
+                        $pagina = isset($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
+                        $inicio = ($pagina - 1) * $registros_por_pagina;
 
-                            // Descobrir qual página estamos
-                            $pagina = isset($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
-                            $inicio = ($pagina - 1) * $registros_por_pagina;
+                        // Verifica se foi feita uma busca por nome ou código
+                        $search = isset($_GET['search']) ? mysqli_real_escape_string($conn, $_GET['search']) : '';
 
-                            // Consulta SQL para buscar andares com paginação
-                            $sql = "SELECT * FROM andar LIMIT $inicio, $registros_por_pagina";
-                            $resultado = mysqli_query($conn, $sql);
+                        // Monta a query considerando a pesquisa (se houver)
+                        $sql = "SELECT * FROM andar";
+                        if (!empty($search)) {
+                            $sql .= " WHERE nome LIKE '%$search%' OR id_andar LIKE '%$search%'";
+                        }
+                        $sql .= " LIMIT $inicio, $registros_por_pagina";
 
-                            // Verifica se há andares e exibe cada um em uma linha da tabela
-                            if (mysqli_num_rows($resultado) > 0) {
-                                while ($row = mysqli_fetch_assoc($resultado)) {
-                            ?>
-                                    <tr>
-                                        <td class='text-center'><?= htmlspecialchars($row['id_andar']); ?></td>
-                                        <td class='text-center'><?= htmlspecialchars($row['nome']); ?></td>
-                                        <td class='text-center'>
-                                            <div class='d-flex justify-content-center'>
-                                                <!-- Botão de edição -->
-                                                <button class='btn action-button edit-button me-2' data-bs-toggle='modal' data-bs-target='#exampleModal' onclick='editFloor(<?= json_encode($row); ?>)'><i class='fas fa-pencil-alt'></i></button>
+                        // Debug para verificar a query
+                        // echo "<pre>$sql</pre>";
 
-                                                <!-- Formulário de exclusão -->
-                                                <form action='../controls/cadastrarAndar.php' method='POST' style='display:inline-block;'>
-                                                    <input type='hidden' name='id_andar' value='<?= htmlspecialchars($row['id_andar']); ?>'>
-                                                    <input type='hidden' name='action' value='delete'>
+                        $resultado = mysqli_query($conn, $sql);
 
-                                                    <!-- Botão de exclusão com confirmação -->
-                                                    <button type='submit' class='btn action-button delete-button' onclick='return confirm("Tem certeza que deseja excluir este andar?")'><i class='fas fa-times'></i></button>
-                                                </form>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                <?php
-                                }
-                            } else {
+                        if (mysqli_num_rows($resultado) > 0) {
+                            while ($row = mysqli_fetch_assoc($resultado)) {
                                 ?>
-
-                                <!-- Mensagem quando não há andares -->
                                 <tr>
-                                    <td colspan='3'>Nenhum andar encontrado</td>
-                                </tr>
-                            <?php
-                            }
-                            ?>
-                        </tbody>
-                    </table>
+                                    <td class="text-center"><?= htmlspecialchars($row['id_andar']); ?></td>
+                                    <td class="text-center"><?= htmlspecialchars($row['nome']); ?></td>
+                                    <td class="text-center">
+                                        <div class="d-flex justify-content-center">
+                                            <!-- Botão de edição -->
+                                            <button class="btn btn-warning me-2 action-button" data-bs-toggle="modal" data-bs-target="#exampleModal" onclick='editFloor(<?= json_encode($row); ?>)'>
+                                                <i class="fas fa-pencil-alt"></i>
+                                            </button>
 
-                    <?php
-                    // Consulta para contar o número total de andares
-                    $sqlTotal = "SELECT COUNT(*) as total FROM andar";
-                    $resultadoTotal = mysqli_query($conn, $sqlTotal);
-                    $totalRegistros = mysqli_fetch_assoc($resultadoTotal)['total'];
-
-                    // Calcula o número total de páginas
-                    $num_pagina = ceil($totalRegistros / $registros_por_pagina);
-                    ?>
-
-                    <nav aria-label="Page navigation">
-                        <ul class="pagination justify-content-center">
-                            <li class="page-item <?php echo ($pagina <= 1) ? 'disabled' : ''; ?>">
-                                <a class="page-link" href="<?php echo ($pagina > 1) ? 'formAndar.php?pagina=' . ($pagina - 1) : '#'; ?>" aria-label="Previous">
-                                    <span aria-hidden="true">&laquo;</span>
-                                </a>
-                            </li>
-                            <?php for ($i = 1; $i <= $num_pagina; $i++) { ?>
-                                <li class="page-item <?php echo ($pagina == $i) ? 'active' : ''; ?>"><a class="page-link" href="formAndar.php?pagina=<?php echo $i; ?>"><?php echo $i; ?></a></li>
-                            <?php } ?>
-                            <li class="page-item <?php echo ($pagina >= $num_pagina) ? 'disabled' : ''; ?>">
-                                <a class="page-link" href="<?php echo ($pagina < $num_pagina) ? 'formAndar.php?pagina=' . ($pagina + 1) : '#'; ?>" aria-label="Next">
-                                    <span aria-hidden="true">&raquo;</span>
-                                </a>
-                            </li>
-                        </ul>
-                    </nav>
-
-                    <!-- Modal para adicionar/editar andares -->
-                    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                        <div class="modal-dialog">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="exampleModalLabel">Adicionar Novo Andar</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                </div>
-
-                                <div class="modal-body">
-                                    <form id="floorForm" action="../controls/cadastrarAndar.php" method="POST">
-                                        <input type="hidden" id="id_andar" name="id_andar">
-                                        <input type="hidden" id="action" name="action" value="add">
-
-                                        <div class="mb-3">
-                                            <label for="nome" class="form-label">Nome do Andar</label>
-                                            <input type="text" class="form-control" id="nome" name="nome" required>
+                                            <!-- Formulário de exclusão -->
+                                            <form action="../controls/cadastrarAndar.php" method="POST" style="display:inline-block;">
+                                                <input type="hidden" name="id_andar" value="<?= htmlspecialchars($row['id_andar']); ?>">
+                                                <input type="hidden" name="action" value="delete">
+                                                <button type="submit" class="btn btn-danger action-button" onclick="return confirm('Tem certeza que deseja excluir este andar?')">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            </form>
                                         </div>
+                                    </td>
+                                </tr>
+                                <?php
+                            }
+                        } else {
+                            ?>
+                            <tr>
+                                <td colspan="3" class="text-center">Nenhum andar encontrado</td>
+                            </tr>
+                            <?php
+                        }
+                        ?>
+                    </tbody>
+                </table>
 
-                                        <button type="submit" class="btn btn-primary">Salvar</button>
-                                    </form>
-                                </div>
+                <!-- Paginação -->
+                <?php
+                $sqlTotal = "SELECT COUNT(*) as total FROM andar";
+                if (!empty($search)) {
+                    $sqlTotal .= " WHERE nome LIKE '%$search%' OR id_andar LIKE '%$search%'";
+                }
+                $resultadoTotal = mysqli_query($conn, $sqlTotal);
+                $totalRegistros = mysqli_fetch_assoc($resultadoTotal)['total'];
+                $num_pagina = ceil($totalRegistros / $registros_por_pagina);
+                if ($num_pagina == 0) {
+                    $num_pagina = 1;
+                }
+                ?>
 
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-                                </div>
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item <?php echo ($pagina <= 1) ? 'disabled' : ''; ?>">
+                            <a class="page-link" href="<?php echo ($pagina > 1) ? 'formAndar.php?pagina=' . ($pagina - 1) . '&search=' . urlencode($search) : '#'; ?>" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                        <?php for ($i = 1; $i <= $num_pagina; $i++) { ?>
+                            <li class="page-item <?php echo ($pagina == $i) ? 'active' : ''; ?>"><a class="page-link" href="formAndar.php?pagina=<?php echo $i; ?>&search=<?php echo urlencode($search); ?>"><?php echo $i; ?></a></li>
+                        <?php } ?>
+                        <li class="page-item <?php echo ($pagina >= $num_pagina) ? 'disabled' : ''; ?>">
+                            <a class="page-link" href="<?php echo ($pagina < $num_pagina) ? 'formAndar.php?pagina=' . ($pagina + 1) . '&search=' . urlencode($search) : '#'; ?>" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+
+                <!-- Modal para adicionar/editar andares -->
+                <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="exampleModalLabel">Adicionar Novo Andar</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+
+                            <div class="modal-body">
+                                <form id="floorForm" action="../controls/cadastrarAndar.php" method="POST">
+                                    <input type="hidden" id="id_andar" name="id_andar">
+                                    <input type="hidden" id="action" name="action" value="add">
+
+                                    <div class="mb-3">
+                                        <label for="nome" class="form-label">Nome do Andar</label>
+                                        <input type="text" class="form-control" id="nome" name="nome" required>
+                                    </div>
+
+                                    <button type="submit" class="btn btn-primary">Salvar</button>
+                                </form>
+                            </div>
+
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
                             </div>
                         </div>
                     </div>
@@ -193,8 +210,8 @@ include_once '../head/menu.php';
     </div>
 
     <!-- Bootstrap JS and dependencies -->
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
 
     <script>
         // Função para limpar o formulário ao adicionar novo andar
@@ -215,6 +232,6 @@ include_once '../head/menu.php';
 
 </body>
 
-        <?php mysqli_close($conn)?>
+<?php mysqli_close($conn); ?>
 
 </html>

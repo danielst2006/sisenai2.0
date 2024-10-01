@@ -1,25 +1,23 @@
 <?php
-
 session_start();
-if(isset($_SESSION['login'])){
-    if($_SESSION['tipo_usuario'] == "COPED" || $_SESSION['tipo_usuario'] == "ADM" || $_SESSION['tipo_usuario'] == "GESTOR"){
-
+if (isset($_SESSION['login'])) {
+    if ($_SESSION['tipo_usuario'] == "COPED" || $_SESSION['tipo_usuario'] == "ADM" || $_SESSION['tipo_usuario'] == "GESTOR") {
+        // Usuário autorizado
     } else {
         header('Location: ../form/menu.php');
+        exit;
     }
 } else {
     header('Location: ../form/login.php');
+    exit;
 }
 
 // Inclui o arquivo de menu
 include_once '../head/menu.php';
 include_once "../bd/conn.php";
 
-if (isset($_POST['busca'])) {
-    $pesquisa = $_POST['busca'];
-} else {
-    $pesquisa = '';
-}
+// Verifica se foi realizada uma pesquisa
+$pesquisa = isset($_POST['busca']) ? $_POST['busca'] : '';
 
 // Paginação
 $pagina = (isset($_GET['pagina'])) ? $_GET['pagina'] : 1;
@@ -40,13 +38,16 @@ $total_disponibilidade = mysqli_fetch_assoc($consulta)['total'];
 $num_pagina = ceil($total_disponibilidade / $quantidade_pg);
 
 // Consulta para buscar as disponibilidades
-$sql = "SELECT ds.idDisponibilidade, s.nome AS sala, ds.data_inicio, ds.data_final 
+$sql = "SELECT ds.idDisponibilidade, s.nome AS sala, ds.data_inicio, ds.horario_inicio, ds.data_final, ds.horario_fim, ds.sala_id 
         FROM disponibilidade_salas ds 
         JOIN salas s ON ds.sala_id = s.id_sala 
         WHERE ds.idDisponibilidade LIKE CONCAT('%', '$pesquisa', '%') 
            OR ds.data_inicio LIKE CONCAT('%', '$pesquisa', '%') 
+           OR ds.horario_inicio LIKE CONCAT('%', '$pesquisa', '%') 
            OR ds.data_final LIKE CONCAT('%', '$pesquisa', '%') 
-           OR s.nome LIKE CONCAT('%', '$pesquisa', '%')";
+           OR ds.horario_fim LIKE CONCAT('%', '$pesquisa', '%') 
+           OR s.nome LIKE CONCAT('%', '$pesquisa', '%') 
+        LIMIT $inicio, $quantidade_pg";
 $resultado = mysqli_query($conn, $sql);
 ?>
 
@@ -57,194 +58,215 @@ $resultado = mysqli_query($conn, $sql);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>Cadastro de Disponibilidade de Salas</title>
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/css/bootstrap.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .table th:nth-child(1),
+        .table td:nth-child(1) {
+            width: 10%;
+        }
+
+        .table th:nth-child(2),
+        .table td:nth-child(2) {
+            width: 20%;
+        }
+
+        .table th:nth-child(3),
+        .table td:nth-child(3) {
+            width: 15%;
+        }
+
+        .table th:nth-child(4),
+        .table td:nth-child(4) {
+            width: 15%;
+        }
+
+        .table th:nth-child(5),
+        .table td:nth-child(5) {
+            width: 15%;
+        }
+
+        .table th:nth-child(6),
+        .table td:nth-child(6) {
+            width: 15%;
+        }
+
+        .table th:nth-child(7),
+        .table td:nth-child(7) {
+            width: 10%;
+        }
+
+        .action-button {
+            width: 30px;
+            height: 30px;
+            padding: 5px;
+            text-align: center;
+        }
+    </style>
 </head>
 
 <body class="bg-light text-dark">
 
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-12">
-                <h1 class="text-center">Disponibilidade de Salas</h1>
-                <div style="overflow-x:auto;">
-                    <div class="pesquisa">
-                        <form action="formDisponibilidade.php" method="post" class="mb-4">
-                            <div class="input-group input-group-sm" style="max-width: 300px;">
-                                <input type="search" class="form-control" placeholder="Pesquisar" id="pesquisar" name="busca">
-                                <div class="input-group-append">
-                                    <button type="submit" class="btn btn-primary btn-sm">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
-                                            <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0" />
-                                        </svg>
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">Cadastro de Disponibilidade de Salas</h1>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <!-- Formulário de Pesquisa -->
+            <form class="d-flex" action="formDisponibilidadeSalas.php" method="POST">
+                <input class="form-control me-2" type="search" name="busca" placeholder="Pesquisar por nome, área ou ano" value="<?= htmlspecialchars($pesquisa); ?>">
+                <button class="btn btn-outline-success" type="submit">Pesquisar</button>
+            </form>
+
+            <!-- Botão para abrir o modal de adição de nova disponibilidade -->
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal" onclick="clearForm()">Adicionar Nova Disponibilidade</button>
+        </div>
+
+        <table class="table table-bordered table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th class="text-center">Código</th>
+                    <th class="text-center">Sala</th>
+                    <th class="text-center">Data Início</th>
+                    <th class="text-center">Data Fim</th>
+                    <th class="text-center">Horário Início</th>
+                    <th class="text-center">Horário Fim</th>
+                    <th class="text-center">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php
+                if (mysqli_num_rows($resultado) > 0) {
+                    while ($row = mysqli_fetch_assoc($resultado)) {
+                ?>
+                        <tr>
+                            <td class='text-center'><?= htmlspecialchars($row['idDisponibilidade']); ?></td>
+                            <td class='text-center'><?= htmlspecialchars($row['sala']); ?></td>
+                            <td class='text-center'><?= htmlspecialchars($row['data_inicio']); ?></td>
+                            <td class='text-center'><?= htmlspecialchars($row['data_final']); ?></td>
+                            <td class='text-center'><?= htmlspecialchars($row['horario_inicio']); ?></td>
+                            <td class='text-center'><?= htmlspecialchars($row['horario_fim']); ?></td>
+                            <td class='text-center'>
+                                <div class="d-flex justify-content-center">
+                                    <!-- Botão de edição -->
+                                    <button class="btn btn-warning me-2 action-button" data-bs-toggle="modal" data-bs-target="#exampleModal" onclick='editDisponibilidade(<?= json_encode($row); ?>)'>
+                                        <i class="fas fa-pencil-alt"></i>
                                     </button>
+
+                                    <!-- Formulário de exclusão -->
+                                    <form action="../controls/cadastrarDisponibilidade.php" method="POST" style="display:inline-block;">
+                                        <input type="hidden" name="idDisponibilidade" value="<?= htmlspecialchars($row['idDisponibilidade']); ?>">
+                                        <input type="hidden" name="action" value="delete">
+                                        <button type="submit" class="btn btn-danger action-button" onclick="return confirm('Tem certeza que deseja excluir esta disponibilidade?')">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </form>
                                 </div>
+                            </td>
+                        </tr>
+                <?php
+                    }
+                } else {
+                    ?>
+                    <tr>
+                        <td colspan="7" class="text-center">Nenhuma disponibilidade encontrada</td>
+                    </tr>
+                <?php
+                }
+                ?>
+            </tbody>
+        </table>
+
+        <!-- Paginação -->
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                <li class="page-item <?php echo ($pagina <= 1) ? 'disabled' : ''; ?>">
+                    <a class="page-link" href="<?= ($pagina > 1) ? 'formDisponibilidadeSalas.php?pagina=' . ($pagina - 1) : '#'; ?>" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                <?php for ($i = 1; $i <= $num_pagina; $i++) { ?>
+                    <li class="page-item <?= ($pagina == $i) ? 'active' : ''; ?>"><a class="page-link" href="formDisponibilidadeSalas.php?pagina=<?= $i; ?>"><?= $i; ?></a></li>
+                <?php } ?>
+                <li class="page-item <?= ($pagina >= $num_pagina) ? 'disabled' : ''; ?>">
+                    <a class="page-link" href="<?= ($pagina < $num_pagina) ? 'formDisponibilidadeSalas.php?pagina=' . ($pagina + 1) : '#'; ?>" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Modal para adicionar/editar disponibilidades -->
+        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Adicionar Nova Disponibilidade</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        <form id="disponibilidadeForm" action="../controls/cadastrarDisponibilidade.php" method="POST">
+                            <input type="hidden" id="idDisponibilidade" name="idDisponibilidade">
+                            <input type="hidden" id="action" name="action" value="add">
+
+                            <div class="mb-3">
+                                <label for="sala_id" class="form-label">Sala</label>
+                                <select class="form-select" id="sala_id" name="sala_id" required>
+                                    <?php
+                                    $query = "SELECT id_sala, nome FROM salas";
+                                    $result = mysqli_query($conn, $query);
+
+                                    if ($result) {
+                                        while ($row = mysqli_fetch_assoc($result)) {
+                                            echo "<option value='{$row['id_sala']}'>{$row['nome']}</option>";
+                                        }
+                                    } else {
+                                        echo "<option value=''>Nenhuma sala disponível</option>";
+                                    }
+                                    ?>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="data_inicio" class="form-label">Data Início</label>
+                                <input type="date" class="form-control" id="data_inicio" name="data_inicio" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="data_final" class="form-label">Data Fim</label>
+                                <input type="date" class="form-control" id="data_final" name="data_final" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="horario_inicio" class="form-label">Horário Início</label>
+                                <input type="time" class="form-control" id="horario_inicio" name="horario_inicio" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="horario_fim" class="form-label">Horário Fim</label>
+                                <input type="time" class="form-control" id="horario_fim" name="horario_fim" required>
                             </div>
                         </form>
-
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                        <div class="flex-grow-1">
-                                <?php
-                                // Exibe uma mensagem de sucesso ou erro com base no parâmetro de status na URL
-                                if (isset($_GET['status'])) {
-                                    if ($_GET['status'] == 'success') {
-                                        echo '<div id="alertBox" class="alert alert-success mb-0" style="display: inline-block" role="alert">Operação realizada com sucesso!</div>';
-                                    } else if ($_GET['status'] == 'error') {
-                                        echo '<div id="alertBox" class="alert alert-danger mb-0" style="display: inline-block" role="alert">Erro ao realizar a operação</div>';
-                                    }
-                                }
-                                ?>
-                            </div>
-
-                            <script>
-                                // Esconde a mensagem de alerta após 5 segundos
-                                setTimeout(function() {
-                                    var alertBox = document.getElementById('alertBox');
-                                    if (alertBox) {
-                                        alertBox.style.display = 'none';
-                                    }
-                                }, 5000); // 5000 ms = 5 segundos
-                            </script>
-
-
-                            <div>
-                                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal" onclick="clearForm()">Adicionar Nova Disponibilidade</button>
-                            </div>
-                        </div>
-
-                        <table class='table rounded-table'>
-                            <thead>
-                                <tr>
-                                    <th class="text-center">Código</th>
-                                    <th class="text-center">Sala</th>
-                                    <th class="text-center">Data Início</th>
-                                    <th class="text-center">Data Fim</th>
-                                    <th class="text-center">Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php
-                                if (mysqli_num_rows($resultado) > 0) {
-                                    while ($row = mysqli_fetch_assoc($resultado)) {
-                                ?>
-                                        <tr>
-                                            <td class='text-center'><?= htmlspecialchars($row['idDisponibilidade']); ?></td>
-                                            <td class='text-center'><?= htmlspecialchars($row['sala']); ?></td>
-                                            <td class='text-center'><?= htmlspecialchars($row['data_inicio']); ?></td>
-                                            <td class='text-center'><?= htmlspecialchars($row['data_final']); ?></td>
-                                            <td class='text-center'>
-                                                <div class='d-flex justify-content-center'>
-                                                    <button class='btn action-button edit-button me-2' data-bs-toggle='modal' data-bs-target='#exampleModal' onclick='editDisponibilidade(<?= json_encode($row); ?>)'><i class='fas fa-pencil-alt'></i></button>
-
-                                                    <form action='../controls/cadastrarDisponibilidade.php' method='POST' style='display:inline-block;'>
-                                                        <input type='hidden' name='idDisponibilidade' value='<?= htmlspecialchars($row['idDisponibilidade']); ?>'>
-                                                        <input type='hidden' name='action' value='delete'>
-                                                        <button type='submit' class='btn action-button delete-button' onclick='return confirm("Tem certeza que deseja excluir esta disponibilidade?")'><i class='fas fa-times'></i></button>
-                                                    </form>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    <?php
-                                    }
-                                } else {
-                                    ?>
-                                    <tr>
-                                        <td colspan='5'>Nenhuma disponibilidade encontrada</td>
-                                    </tr>
-                                <?php
-                                }
-                                ?>
-                            </tbody>
-                        </table>
-
-                        <nav aria-label="Page navigation">
-                            <ul class="pagination justify-content-center">
-                                <li class="page-item <?php echo ($pagina <= 1) ? 'disabled' : ''; ?>">
-                                    <a class="page-link" href="<?php echo ($pagina > 1) ? 'formDisponibilidade.php?pagina=' . ($pagina - 1) : '#'; ?>" aria-label="Previous">
-                                        <span aria-hidden="true">&laquo;</span>
-                                    </a>
-                                </li>
-                                <?php for ($i = 1; $i <= $num_pagina; $i++) { ?>
-                                    <li class="page-item <?php echo ($pagina == $i) ? 'active' : ''; ?>"><a class="page-link" href="formDisponibilidade.php?pagina=<?php echo $i; ?>"><?php echo $i; ?></a></li>
-                                <?php } ?>
-                                <li class="page-item <?php echo ($pagina >= $num_pagina) ? 'disabled' : ''; ?>">
-                                    <a class="page-link" href="<?php echo ($pagina < $num_pagina) ? 'formDisponibilidade.php?pagina=' . ($pagina + 1) : '#'; ?>" aria-label="Next">
-                                        <span aria-hidden="true">&raquo;</span>
-                                    </a>
-                                </li>
-                            </ul>
-                        </nav>
-
-                        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                            <div class="modal-dialog">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title" id="exampleModalLabel">Adicionar Nova Disponibilidade</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                    </div>
-
-                                    <div class="modal-body">
-                                        <form id="disponibilidadeForm" action="../controls/cadastrarDisponibilidade.php" method="POST">
-                                            <input type="hidden" id="idDisponibilidade" name="idDisponibilidade">
-                                            <input type="hidden" id="action" name="action" value="add">
-
-                                            <div class="mb-3">
-                                                <label for="sala_id" class="form-label">Sala</label>
-                                                <select class="form-select" id="sala_id" name="sala_id" required>
-                                                    <?php
-                                                    // Consulta para listar salas
-                                                    $query = "SELECT id_sala, nome FROM salas";
-                                                    $result = mysqli_query($conn, $query);
-
-                                                    if ($result) {
-                                                        while ($row = mysqli_fetch_assoc($result)) {
-                                                            echo "<option value='{$row['id_sala']}'>{$row['nome']}</option>";
-                                                        }
-                                                    } else {
-                                                        echo "<option value=''>Nenhuma sala disponível</option>";
-                                                    }
-                                                    ?>
-                                                </select>
-                                            </div>
-                                            <div class="mb-3">
-                                                <label for="data_inicio" class="form-label">Data Início</label>
-                                                <input type="date" class="form-control" id="data_inicio" name="data_inicio" required>
-                                            </div>
-                                            <div class="mb-3">
-                                                <label for="data_final" class="form-label">Data Fim</label>
-                                                <input type="date" class="form-control" id="data_final" name="data_final" required>
-                                            </div>
-                                        </form>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-                                        <button type="submit" class="btn btn-primary" onclick="submitForm()">Salvar</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                        <button type="submit" class="btn btn-primary" onclick="submitForm()">Salvar</button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Bootstrap JS and dependencies -->
+    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/js/bootstrap.min.js"></script>
     <script>
-        // Função para preencher o formulário no modal para edição
         function editDisponibilidade(data) {
             document.getElementById('idDisponibilidade').value = data.idDisponibilidade;
             document.getElementById('sala_id').value = data.sala_id;
             document.getElementById('data_inicio').value = data.data_inicio;
+            document.getElementById('horario_inicio').value = data.horario_inicio;
             document.getElementById('data_final').value = data.data_final;
+            document.getElementById('horario_fim').value = data.horario_fim;
             document.getElementById('action').value = 'edit';
             document.querySelector('.modal-title').textContent = 'Editar Disponibilidade';
         }
 
-        // Função para limpar o formulário no modal para adicionar novas disponibilidades
         function clearForm() {
             document.getElementById('disponibilidadeForm').reset();
             document.getElementById('idDisponibilidade').value = '';
@@ -252,13 +274,12 @@ $resultado = mysqli_query($conn, $sql);
             document.querySelector('.modal-title').textContent = 'Adicionar Nova Disponibilidade';
         }
 
-        // Função para submeter o formulário
         function submitForm() {
             document.getElementById('disponibilidadeForm').submit();
         }
     </script>
 </body>
 
-        <?php mysqli_close($conn)?>
+<?php mysqli_close($conn); ?>
 
 </html>

@@ -9,8 +9,10 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
     $nome = $_POST['nome'];
     $andar_id = $_POST['andar_id'];
 
+   
+
     if ($action == 'add') {
-        $sql = "INSERT INTO salas (nome, andar_id) VALUES ('$nome', $andar_id)";
+        $sql = "INSERT INTO salas (nome, andar_id) VALUES ('$nome', '$andar_id')";
     } elseif ($action == 'update') {
         $sql = "UPDATE salas SET nome='$nome', andar_id=$andar_id WHERE id_sala=$id";
     } elseif ($action == 'delete') {
