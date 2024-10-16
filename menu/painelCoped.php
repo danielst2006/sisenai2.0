@@ -303,7 +303,7 @@ $total_turmas = $quantidade_manha + $quantidade_tarde + $quantidade_noite;
 
 <body>
     <div class="container">
-        <h4 class="text-center text-primary header-text">Painel COPED</h4>
+        <!-- <h4 class="text-center text-primary header-text">Painel COPED</h4> -->
 
         <!-- Turmas ao Vivo -->
         <div class="table-container">

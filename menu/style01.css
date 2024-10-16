@@ -11,7 +11,8 @@ body {
 .header1 {
     height: 100px;
     background-color: #f2f2f2; /* Azul escuro */
-    color: #164193;
+    /* color: #164193; */
+    color: #fe03c3;
     padding: 20px;
     display: flex;
     justify-content: space-between;
